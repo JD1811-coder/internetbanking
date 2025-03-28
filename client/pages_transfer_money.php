@@ -6,7 +6,8 @@ check_login();
 
 $client_id = $_SESSION['client_id'];
 
-if (isset($_POST['deposit']) && isset($_GET['account_id'], $_GET['  '])) {   
+if (isset($_POST['deposit']) && isset($_GET['account_id'], $_GET['client_id'])) {
+$account_id = $_GET['account_id'];
     $tr_code = $_POST['tr_code'];
     $account_id = $_GET['account_id'];  // Sender's Account ID
     $client_id = $_GET['client_id'];
@@ -28,8 +29,9 @@ if (isset($_POST['deposit']) && isset($_GET['account_id'], $_GET['  '])) {
                 receiver.account_id AS receiver_id, receiver.acc_amount AS receiver_balance
             FROM ib_bankaccounts sender
             JOIN ib_acc_types acc_type ON sender.acc_type_id = acc_type.acctype_id
-            LEFT JOIN ib_bankaccounts receiver ON receiver.account_number = ?
-            WHERE sender.account_id = ?;
+           LEFT JOIN ib_bankaccounts receiver ON receiver.account_number = ?
+WHERE sender.account_id = ?;
+
         ";
 
         $stmt = $mysqli->prepare($query);
@@ -273,7 +275,6 @@ if (isset($_POST['deposit']) && isset($_GET['account_id'], $_GET['  '])) {
     <!-- jQuery -->
     <script src="plugins/jquery/jquery.min.js"></script>
     <!-- Include jQuery and jQuery UI for Autocomplete -->
-
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
     <!-- Bootstrap 4 -->
@@ -292,6 +293,8 @@ if (isset($_POST['deposit']) && isset($_GET['account_id'], $_GET['  '])) {
             document.querySelector("form").addEventListener("submit", function (event) {
                 var senderAccount = "<?php echo $row->account_number; ?>"; // Fetch sender's account number
                 var receivingAccount = document.getElementById("receiving_acc_no").value;
+                console.log("Sender Account:", senderAccount);
+                console.log("Receiving Account:", receivingAccount);
 
                 if (receivingAccount === senderAccount) {
                     alert("Transaction Failed! You cannot transfer money to your own account.");

@@ -260,23 +260,6 @@ if (isset($_POST['update_account'])) {
             errorDiv.innerHTML = "";
             errorDiv.style.color = "red";
 
-            if (accNameInput === "") {
-                errorDiv.innerHTML = "❌ Account Name cannot be empty!";
-                event.preventDefault(); // Stop form submission
-                return;
-            }
-
-            if (!nameRegex.test(accNameInput)) {
-                errorDiv.innerHTML = "❌ Account Name should contain only alphabets and spaces!";
-                event.preventDefault();
-                return;
-            }
-
-            if (accNameInput.replace(/\s/g, '') === "") {
-                errorDiv.innerHTML = "❌ Account Name cannot be only spaces!";
-                event.preventDefault();
-                return;
-            }
 
             // Check for duplicate name using AJAX
             fetch(`check_duplicate.php?acc_name=${encodeURIComponent(accNameInput)}`)

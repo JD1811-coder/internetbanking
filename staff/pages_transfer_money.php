@@ -6,9 +6,10 @@ check_login();
 $staff_id = $_SESSION['staff_id'];
 
 if (isset($_POST['deposit'])) {
-    if (isset($_GET['account_id']) && isset($_GET['staff_id'])) {
+    if (isset($_GET['account_id']) && isset($_GET['client_id'])) {
+
         $tr_code = $_POST['tr_code'];
-        $account_id = $_GET['account_id'];  // Sender's Account ID
+        $account_id = $_GET['account_id'];
         $client_id = $_GET['client_id'];
         $transaction_amt = $_POST['transaction_amt'];
         $receiving_acc_no = $_POST['receiving_acc_no'];
@@ -45,13 +46,39 @@ if (isset($_POST['deposit'])) {
           JOIN ib_acc_types t ON b.acc_type_id = t.acctype_id
           WHERE b.account_id = ?";
 
+
             $stmt = $mysqli->prepare($query);
             $stmt->bind_param('i', $account_id);
             $stmt->execute();
             $stmt->bind_result($acc_amount, $acc_type);
             $stmt->fetch();
             $stmt->close();
+            $query = "SELECT acc_amount FROM ib_bankaccounts WHERE account_id = ?";
+            $stmt = $mysqli->prepare($query);
+            $stmt->bind_param('i', $account_id);
+            $stmt->execute();
+            $stmt->bind_result($acc_amount);
+            $stmt->fetch();
+            $stmt->close();
 
+            // Ensure $acc_amount is not null
+            if ($acc_amount === null) {
+                $acc_amount = 0;  // Default to 0 if account is not found
+            }
+
+
+            $query = "SELECT acc_amount FROM ib_bankaccounts WHERE account_id = ?";
+            $stmt = $mysqli->prepare($query);
+            $stmt->bind_param('i', $account_id);
+            $stmt->execute();
+            $stmt->bind_result($acc_amount);
+            $stmt->fetch();
+            $stmt->close();
+
+            // Ensure $acc_amount is not null
+            if ($acc_amount !== null) {
+                $acc_amount = 0;  // Default to 0 if account is not found
+            }
 
             // Fetch Minimum Balance for the Account Type
             $query = "SELECT min_balance FROM ib_acc_types WHERE name = ?";
@@ -99,7 +126,20 @@ if (isset($_POST['deposit'])) {
                     });
                 });
                 </script>';
-            } else {
+            } elseif ($account_id == $receiver_account_id) {
+                echo '<script>
+                document.addEventListener("DOMContentLoaded", function() {
+                    Swal.fire({
+                        icon: "error",
+                        title: "Transaction Failed!",
+                        text: "You cannot transfer money to your own account.",
+                        confirmButtonText: "OK"
+                    });
+                });
+                </script>';
+            } 
+            else
+            {
 
 
                 // Deduct amount from sender
@@ -276,17 +316,18 @@ if (isset($_POST['deposit'])) {
                                             </div>
 
                                             <div class="row">
-                                            
-                                            <div class="col-md-4 form-group">
-                                                <label for="receiving_acc_name">Receiving Account Name</label>
-                                                <input type="text" name="receiving_acc_name" id="receiving_acc_name" required class="form-control"
-                                                    placeholder="Search account name...">
-                                            </div>
 
-                                            <div class="col-md-4 form-group">
-                                                <label for="receiving_acc_no">Receiving Account Number</label>
-                                                <input type="text" name="receiving_acc_no" id="receiving_acc_no" readonly required class="form-control">
-                                            </div>
+                                                <div class="col-md-4 form-group">
+                                                    <label for="receiving_acc_name">Receiving Account Name</label>
+                                                    <input type="text" name="receiving_acc_name" id="receiving_acc_name"
+                                                        required class="form-control" placeholder="Search account name...">
+                                                </div>
+
+                                                <div class="col-md-4 form-group">
+                                                    <label for="receiving_acc_no">Receiving Account Number</label>
+                                                    <input type="text" name="receiving_acc_no" id="receiving_acc_no"
+                                                        readonly required class="form-control">
+                                                </div>
 
                                                 <!-- <div class=" col-md-4 form-group">
                                                     <label for="exampleInputPassword1">Receiving Account Holder</label>
@@ -343,40 +384,37 @@ if (isset($_POST['deposit'])) {
     <script src="dist/js/adminlte.min.js"></script>
     <!-- AdminLTE for demo purposes -->
     <script src="dist/js/demo.js"></script>
-    <script type="text/javascript">
-        $(document).ready(function () {
-            bsCustomFileInput.init();
-            document.addEventListener("DOMContentLoaded", function () {
-                document.querySelector("form").addEventListener("submit", function (event) {
-                    var senderAccount = "<?php echo $account_number; ?>"; // Fetch sender's account number
-                    var receivingAccount = document.getElementById("receiving_acc_no").value;
-                    var enteredAmount = parseFloat(document.getElementById("amount").value); // Get entered amount
-                    var availableBalance = parseFloat("<?php echo $available_balance; ?>"); // Fetch available balance from PHP
+    <script>
+    document.addEventListener("DOMContentLoaded", function () {
+    document.querySelector("form").addEventListener("submit", function (event) {
+        var senderAccountNumber = "<?php echo $row->account_number; ?>"; // Get sender's account number
+        var receivingAccountNumber = document.getElementById("receiving_acc_no").value;
+        var enteredAmount = parseFloat(document.querySelector('input[name="transaction_amt"]').value);
 
-                    // Self-transfer check
-                    if (receivingAccount === senderAccount) {
-                        alert("You cannot transfer money to your own account.");
-                        event.preventDefault();
-                        return; // Exit early
-                    }
-
-                    // Amount exceeds balance check
-                    if (enteredAmount > availableBalance) {
-                        alert("Insufficient funds. The entered amount exceeds the available balance.");
-                        event.preventDefault();
-                        return; // Exit early
-                    }
-
-                    // Optional: Check if the entered amount is zero or negative
-                    if (enteredAmount <= 0) {
-                        alert("Please enter a valid amount greater than zero.");
-                        event.preventDefault();
-                        return;
-                    }
-                });
+        if (receivingAccountNumber === senderAccountNumber) {
+            Swal.fire({
+                icon: "error",
+                title: "Invalid Transfer",
+                text: "You cannot transfer money to your own account.",
+                confirmButtonText: "OK"
             });
-        });
-    </script>
+            event.preventDefault();
+            return;
+        }
+
+        if (enteredAmount <= 0 || isNaN(enteredAmount)) {
+            Swal.fire({
+                icon: "error",
+                title: "Invalid Amount",
+                text: "Please enter a valid amount greater than zero.",
+                confirmButtonText: "OK"
+            });
+            event.preventDefault();
+        }
+    });
+});
+
+</script>
 
     <script>
         document.addEventListener("DOMContentLoaded", function () {
@@ -397,42 +435,42 @@ if (isset($_POST['deposit'])) {
 
     </script>
     <script>
-$(document).ready(function () {
-    $('#receiving_acc_name').on('input', function () {
-        var receivingAccName = $(this).val();
+        $(document).ready(function () {
+            $('#receiving_acc_name').on('input', function () {
+                var receivingAccName = $(this).val();
 
-        if (receivingAccName.length >= 2) {
-            $.ajax({
-                url: 'fetch_accounts.php',
-                method: 'POST',
-                data: { receiving_acc_name: receivingAccName },
-                success: function (data) {
-                    const accounts = JSON.parse(data);
+                if (receivingAccName.length >= 2) {
+                    $.ajax({
+                        url: 'fetch_accounts.php',
+                        method: 'POST',
+                        data: { receiving_acc_name: receivingAccName },
+                        success: function (data) {
+                            const accounts = JSON.parse(data);
 
-                    if (accounts.length > 0) {
-                        $('#receiving_acc_no').val(accounts[0]); // Auto-fill the first match
-                    } else {
-                        $('#receiving_acc_no').val(''); // Clear the account number if no match
-                    }
-                },
-                error: function () {
-                    Swal.fire({
-                        icon: "error",
-                        title: "Error",
-                        text: "Failed to fetch account details. Please try again.",
-                        confirmButtonText: "OK"
+                            if (accounts.length > 0) {
+                                $('#receiving_acc_no').val(accounts[0]); // Auto-fill the first match
+                            } else {
+                                $('#receiving_acc_no').val(''); // Clear the account number if no match
+                            }
+                        },
+                        error: function () {
+                            Swal.fire({
+                                icon: "error",
+                                title: "Error",
+                                text: "Failed to fetch account details. Please try again.",
+                                confirmButtonText: "OK"
+                            });
+                        }
                     });
+                } else {
+                    $('#receiving_acc_no').val(''); // Clear if input is less than 2 characters
                 }
             });
-        } else {
-            $('#receiving_acc_no').val(''); // Clear if input is less than 2 characters
-        }
-    });
-});
-</script>
+        });
+    </script>
 
-    
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </body>
 
 </html>
