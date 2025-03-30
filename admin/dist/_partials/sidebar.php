@@ -110,7 +110,7 @@
                         <li class="nav-item has-treeview">
                             <a href="#" class="nav-link">
                                 <i class="nav-icon fas fa-briefcase"></i>
-                                <p>Accounts <i class="fas fa-angle-left right"></i></p>
+                                <p>Account Types <i class="fas fa-angle-left right"></i></p>
                             </a>
                             <ul class="nav nav-treeview">
                                 <li class="nav-item"><a href="pages_add_acc_type.php" class="nav-link"><i

@@ -26,7 +26,12 @@ if (isset($_POST['open_account'])) {
 
     if (!isset($err)) {
         // Check existing accounts
-        $check_query = "SELECT acc_type FROM iB_bankAccounts WHERE client_id = ?";
+        $check_query = "
+    SELECT t.name FROM iB_bankAccounts b
+    JOIN iB_Acc_types t ON b.acc_type_id = t.acctype_id
+    WHERE b.client_id = ?
+";
+
         $stmt_check = $mysqli->prepare($check_query);
         $stmt_check->bind_param('i', $client_id);
         $stmt_check->execute();

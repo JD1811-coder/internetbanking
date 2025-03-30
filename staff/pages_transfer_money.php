@@ -435,6 +435,26 @@ if (isset($_POST['deposit'])) {
 
     </script>
     <script>
+document.addEventListener("DOMContentLoaded", function () {
+    document.getElementById("receiving_acc_name").addEventListener("input", function () {
+        var inputValue = this.value;
+        var regex = /^[A-Za-z\s]*$/; // Only allows letters and spaces
+
+        if (!regex.test(inputValue)) {
+            Swal.fire({
+                icon: "error",
+                title: "Invalid Input",
+                text: "Receiving Account Name can only contain letters.",
+                confirmButtonText: "OK"
+            });
+
+            // Remove the last entered invalid character
+            this.value = inputValue.replace(/[^A-Za-z\s]/g, '');
+        }
+    });
+});
+</script>
+    <script>
         $(document).ready(function () {
             $('#receiving_acc_name').on('input', function () {
                 var receivingAccName = $(this).val();
