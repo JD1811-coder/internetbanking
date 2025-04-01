@@ -75,7 +75,13 @@
                                 <p>Dashboard</p>
                             </a>
                         </li>
-
+   <!-- Account -->
+   <li class="nav-item">
+            <a href="pages_bank_main_account.php" class="nav-link">
+              <i class="nav-icon fas fa-user-tie"></i>
+              <p>Main Bank Account</p>
+            </a>
+          </li>
                         <li class="nav-item">
                             <a href="pages_account.php" class="nav-link">
                                 <i class="nav-icon fas fa-user-secret"></i>

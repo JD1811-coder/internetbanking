@@ -5,33 +5,71 @@ include('conf/checklogin.php');
 check_login();
 $admin_id = $_SESSION['admin_id'];
 
-// Ensure the $mysqli connection object exists and is error-free.
-if (!isset($mysqli) || $mysqli->connect_error) {
-    die("Database connection failed: " . (isset($mysqli->connect_error) ? $mysqli->connect_error : "mysqli object not set"));
+if (isset($_POST['approve_loan'])) {
+    $loan_id = intval($_POST['loan_id']);
+    $staff_id = $_SESSION['admin_id']; // Logged-in staff approving the loan
+
+    // Fetch loan details
+    $query = "SELECT la.loan_amount, la.client_id, ib.acc_amount
+              FROM loan_applications la
+              JOIN ib_bankaccounts ib ON la.client_id = ib.client_id
+              WHERE la.id = ?";
+
+    $stmt = $mysqli->prepare($query);
+    $stmt->bind_param('i', $loan_id);
+    $stmt->execute();
+    $stmt->bind_result($loan_amount, $client_id, $account_id);
+    $stmt->fetch();
+    $stmt->close();
+
+    if ($loan_amount && $client_id && $account_id) {
+        // Update loan status to 'approved'
+        $updateLoan = "UPDATE loan_applications SET status='approved', reviewed_by=? WHERE id=?";
+        $stmt = $mysqli->prepare($updateLoan);
+        $stmt->bind_param('ii', $staff_id, $loan_id);
+        $stmt->execute();
+        $stmt->close();
+
+        // Insert a transaction for loan disbursement
+        $tr_code = strtoupper(uniqid('LN')); // Unique transaction code
+        $tr_type = 'Deposit';
+        $tr_desc = 'Loan Disbursement';
+        $stmt = $mysqli->prepare("INSERT INTO iB_Transactions (tr_code, account_id, client_id, tr_type, transaction_amt, description) 
+                                  VALUES (?, ?, ?, ?, ?, ?)");
+        $stmt->bind_param('siisds', $tr_code, $account_id, $client_id, $tr_type, $loan_amount, $tr_desc);
+        $stmt->execute();
+        $stmt->close();
+
+        $info = "Loan Approved and Credited to Client's Account";
+    } else {
+        $err = "Error processing loan approval.";
+    }
 }
 
-// Prepare the SQL query to fetch loan applications, excluding those with a status of 'pending'
-$query = "SELECT la.*, lt.type_name, la.income_salary, 
-                 COALESCE(ibs.name, 'N/A') AS reviewer_name, 
-                 la.loan_duration_years, la.loan_duration_months
-          FROM loan_applications la
-          LEFT JOIN loan_types lt ON la.loan_type_id = lt.id
-          LEFT JOIN ib_staff ibs ON la.reviewed_by = ibs.staff_id
-          WHERE la.status <> 'pending'";
+// Fetch all loan applications
+$loanQuery = "SELECT 
+    la.id, 
+    c.name AS applicant_name, 
+    lt.type_name, 
+    la.loan_amount, 
+    la.income_salary, 
+    la.application_date, 
+    la.loan_duration_years, 
+    la.loan_duration_months, 
+    la.status, 
+    s.name AS reviewer_name, 
+    la.staff_remark 
+FROM loan_applications la
+JOIN ib_clients c ON la.client_id = c.client_id
+JOIN loan_types lt ON la.loan_type_id = lt.id
+LEFT JOIN ib_staff s ON la.reviewed_by = s.id
+ORDER BY la.application_date DESC";
 
-
-// Execute the query and assign to a uniquely named variable to avoid conflicts
-$loanResult = $mysqli->query($query);
-
-// Check if the query was successful
-if (!$loanResult) {
-    die("SQL Error: " . $mysqli->error . "<br>Query: " . $query);
-}
+$loanResult = $mysqli->query($loanQuery);
 ?>
 
 <!DOCTYPE html>
 <html>
-
 <head>
     <meta charset="UTF-8">
     <title>Loan Applications</title>
@@ -73,7 +111,7 @@ if (!$loanResult) {
                             <div class="card-body">
                                 <div class="table-responsive">
                                     <table id="example1" class="table table-striped table-bordered table-hover">
-                                        <thead class="">
+                                        <thead>
                                             <tr>
                                                 <th>#</th>
                                                 <th>Applicant Name</th>
@@ -160,5 +198,4 @@ if (!$loanResult) {
         });
     </script>
 </body>
-
 </html>
