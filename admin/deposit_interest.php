@@ -26,7 +26,7 @@ if ($count > 0) {
 
 // Fetch all active bank accounts
 $accountsQuery = "SELECT ib_bankaccounts.account_id, ib_bankaccounts.acc_amount, ib_bankaccounts.acc_type_id
-                   FROM ib_bankaccounts WHERE ib_bankaccounts.acc_status = 'Active'";
+                   FROM ib_bankaccounts WHERE ib_bankaccounts.is_active = '1'";
 $result = $mysqli->query($accountsQuery);
 
 if ($result->num_rows > 0) {

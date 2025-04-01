@@ -130,10 +130,10 @@ if (isset($_GET['toggleBankAccType'])) {
             <i class="fas fa-<?php echo $row->is_active ? 'times' : 'check'; ?>"></i>
             <?php echo $row->is_active ? 'Disable' : 'Enable'; ?>
         </button>
-
+<!-- 
         <a class="btn btn-danger btn-sm delete-confirm" href="pages_manage_accs.php?deleteBankAccType=<?php echo $row->acctype_id; ?>">
             <i class="fas fa-trash"></i> Delete
-        </a>
+        </a> -->
     </div>
 </td>
                                             </tr>

@@ -94,6 +94,7 @@ if (isset($_GET['deleteStaff'])) {
                                             <th>Contact</th>
                                             <th>Email</th>
                                             <th>Gender</th>
+                                            <th>Action</th>
 
                                         </tr>
                                     </thead>
@@ -126,10 +127,7 @@ if (isset($_GET['deleteStaff'])) {
             <?php echo $row->is_active ? 'Disable' : 'Enable'; ?>
         </button>
 
-        <button class="btn btn-danger btn-sm"
-            onclick="deleteStaff(<?php echo $row->staff_id; ?>)">
-            <i class="fas fa-trash"></i> Delete
-        </button>
+        
     </div>
 </td>
 

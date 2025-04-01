@@ -120,12 +120,12 @@
                   <p>My Loan Status</p>
                 </a>
               </li>
-              <li class="nav-item">
+              <!-- <li class="nav-item">
                 <a href="pages_view_client_bank_acc.php" class="nav-link">
                   <i class="fas fa-money-bill-alt nav-icon"></i>
                   <p>Balance Enquiries</p>
                 </a>
-              </li>
+              </li> -->
             </ul>
           </li>
    <!-- Nominee Section -->

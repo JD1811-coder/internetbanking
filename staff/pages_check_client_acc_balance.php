@@ -23,80 +23,70 @@ $client_id = $_SESSION['staff_id'];
 
         <!-- Content Wrapper. Contains page content -->
         <?php
-        /*  Im About to do something stupid buh lets do it
-         *  get the sumof all deposits(Money In) then get the sum of all
-         *  Transfers and Withdrawals (Money Out).
-         * Then To Calculate Balance and rate,
-         * Take the rate, compute it and then add with the money in account and 
-         * Deduce the Money out
-         *
-         */
+        {
+      // Fetch account details
+$account_id = $_GET['account_id'];
+$client_id = $_SESSION['client_id'];
 
-        //get the total amount deposited
-        $account_id = $_GET['account_id'];
-        $result = "SELECT SUM(transaction_amt) FROM iB_Transactions WHERE  account_id = ? AND  tr_type = 'Deposit' ";
-        $stmt = $mysqli->prepare($result);
-        $stmt->bind_param('i', $account_id);
-        $stmt->execute();
-        $stmt->bind_result($deposit);
-        $stmt->fetch();
-        $stmt->close();
+// Fetch total deposits
+$result = "SELECT SUM(transaction_amt) FROM iB_Transactions WHERE client_id = ? AND tr_type = 'Deposit'";
+$stmt = $mysqli->prepare($result);
+$stmt->bind_param('i', $client_id);
+$stmt->execute();
+$stmt->bind_result($iB_deposits);
+$stmt->fetch();
+$stmt->close();
+$iB_deposits = $iB_deposits ?? 0; // Ensure it's not NULL
 
-        //get total amount withdrawn
-        $account_id = $_GET['account_id'];
-        $result = "SELECT SUM(transaction_amt) FROM iB_Transactions WHERE  account_id = ? AND  tr_type = 'Withdrawal' ";
-        $stmt = $mysqli->prepare($result);
-        $stmt->bind_param('i', $account_id);
-        $stmt->execute();
-        $stmt->bind_result($withdrawal);
-        $stmt->fetch();
-        $stmt->close();
+// Fetch total withdrawals
+$result = "SELECT SUM(transaction_amt) FROM iB_Transactions WHERE client_id = ? AND tr_type = 'Withdrawal'";
+$stmt = $mysqli->prepare($result);
+$stmt->bind_param('i', $client_id);
+$stmt->execute();
+$stmt->bind_result($iB_withdrawal);
+$stmt->fetch();
+$stmt->close();
+$iB_withdrawal = $iB_withdrawal ?? 0;
 
-        //get total amount transfered
-        $account_id = $_GET['account_id'];
-        $result = "SELECT SUM(transaction_amt) FROM iB_Transactions WHERE  account_id = ? AND  tr_type = 'Transfer' ";
-        $stmt = $mysqli->prepare($result);
-        $stmt->bind_param('i', $account_id);
-        $stmt->execute();
-        $stmt->bind_result($Transfer);
-        $stmt->fetch();
-        $stmt->close();
+// Fetch total transfers
+$result = "SELECT SUM(transaction_amt) FROM iB_Transactions WHERE client_id = ? AND tr_type = 'Transfer'";
+$stmt = $mysqli->prepare($result);
+$stmt->bind_param('i', $client_id);
+$stmt->execute();
+$stmt->bind_result($iB_Transfers);
+$stmt->fetch();
+$stmt->close();
+$iB_Transfers = $iB_Transfers ?? 0;
 
+// Fetch initial balance
+$result = "SELECT SUM(acc_amount) FROM iB_bankAccounts WHERE client_id = ?";
+$stmt = $mysqli->prepare($result);
+$stmt->bind_param('i', $client_id);
+$stmt->execute();
+$stmt->bind_result($TotalBalInAccount);
+$stmt->fetch();
+$stmt->close();
+$TotalBalInAccount = $TotalBalInAccount ?? 0;
 
+// Fetch account details
+$ret = "SELECT a.*, c.name, c.client_number, c.email AS client_email, c.phone AS client_phone,
+        t.name AS acc_type, t.rate AS acc_rates
+        FROM iB_bankAccounts a
+        JOIN iB_clients c ON a.client_id = c.client_id
+        LEFT JOIN ib_acc_types t ON a.acc_type_id = t.acctype_id
+        WHERE a.account_id = ?";
+$stmt = $mysqli->prepare($ret);
+$stmt->bind_param('i', $account_id);
+$stmt->execute();
+$res = $stmt->get_result();
+$row = $res->fetch_object();
 
-        $account_id = $_GET['account_id'];
-        $ret = "SELECT a.*, 
-                c.name, 
-                c.client_number, 
-                c.email AS client_email, 
-                c.phone AS client_phone,
-                t.name AS acc_type,
-                t.rate AS acc_rates
-         FROM iB_bankAccounts a 
-         JOIN iB_clients c ON a.client_id = c.client_id 
-         LEFT JOIN ib_acc_types t ON a.acc_type_id = t.acctype_id
-         WHERE a.account_id = ?";
-        
-        $stmt = $mysqli->prepare($ret);
-        if (!$stmt) {
-            die("Query Preparation Failed: " . $mysqli->error);
-        }
-        $stmt->bind_param('i', $account_id);
-        $stmt->execute();
-        $res = $stmt->get_result();
-        
-        $cnt = 1;
-        while ($row = $res->fetch_object()) {
-            //compute rate
-            // $banking_rate = ($row->acc_rates) / 100;
-            //compute Money out
-            $money_out = $withdrawal + $Transfer;
-            //compute the balance
-            $money_in = $deposit - $money_out;
-            //get the rate
-            $rate_amt = $banking_rate * $money_in;
-            //compute the intrest + balance 
-            $totalMoney = $rate_amt + $money_in;
+// Correct Balance Calculation
+$money_out = $iB_withdrawal + $iB_Transfers;
+$money_in = $iB_deposits;
+$banking_rate = ($row->acc_rates ?? 0) / 100;
+$rate_amt = $banking_rate * $money_in;
+$totalMoney = $TotalBalInAccount + $money_in - $money_out + $rate_amt;
 
         ?>
             <div class="content-wrapper">

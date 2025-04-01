@@ -134,13 +134,13 @@ if (isset($_GET['deleteClient'])) {
                                 <i class="fas fa-<?php echo $row->is_active ? 'times' : 'check'; ?>"></i>
                                 <?php echo $row->is_active ? 'Disable' : 'Enable'; ?>
                               </a>
-                              <a class="btn btn-danger btn-sm"
+                              <!-- <a class="btn btn-danger btn-sm"
                                 href="pages_manage_clients.php?deleteClient=<?php echo $row->client_id; ?> }}"
                                 onclick="return confirm('Are you sure you want to delete this client?');">
                                 <i class="fas fa-trash"></i> Delete
-                              </a>
+                              </a> -->
                             </div>
-                          </td>
+                          <!-- </td> -->
                         </tr>
                         <?php $cnt++;
                       } ?>

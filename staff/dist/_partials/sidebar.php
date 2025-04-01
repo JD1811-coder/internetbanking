@@ -163,12 +163,7 @@ if (empty($row->profile_pic)) {
                     </a>
                   </li>
                   
-                  <li class="nav-item">
-                    <a href="pages_balance_enquiries.php" class="nav-link">
-                      <i class="fas fa-money-bill-alt nav-icon"></i>
-                      <p>Balance Enquiries</p>
-                    </a>
-                  </li>
+                 
                 </ul>
               </li>
           <!-- ./Finances -->
