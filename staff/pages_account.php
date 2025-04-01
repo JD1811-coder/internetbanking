@@ -11,6 +11,17 @@ if (isset($_POST['update_staff_account'])) {
     $email = $_POST['email'];
     $sex = $_POST['sex'];
 
+    $phone = trim($_POST['phone']);
+
+if (!preg_match('/^[6789]\d{9}$/', $phone)) {
+    $err = "Phone number must start with 6, 7, 8, or 9 and be exactly 10 digits.";
+} elseif (preg_match('/^0+$/', $phone)) {
+    $err = "Phone number cannot be all zeros.";
+} elseif (ctype_space($phone) || empty($phone)) {
+    $err = "Phone number cannot be empty or contain only spaces.";
+}
+
+
     if (!empty($_FILES["profile_pic"]["name"])) {
         $allowedTypes = array('jpg', 'jpeg', 'png');
         $fileExtension = strtolower(pathinfo($_FILES["profile_pic"]["name"], PATHINFO_EXTENSION));
@@ -378,18 +389,26 @@ if (isset($_SESSION['staff_id'])) {
     <script src="dist/js/demo.js"></script>
     <!-- Contact Number Validation Script -->
     <script>
-        document.getElementById('updateProfileForm').addEventListener('submit', function (event) {
-            var phoneInput = document.getElementById('inputPhone');
-            var phoneError = document.getElementById('phoneError');
-            var phoneRegex = /^\d{10}$/;
+       document.getElementById('updateProfileForm').addEventListener('submit', function (event) {
+    var phoneInput = document.getElementById('inputPhone');
+    var phoneError = document.getElementById('phoneError');
+    var phoneValue = phoneInput.value.trim();
+    var phoneRegex = /^[6789]\d{9}$/;
 
-            if (!phoneRegex.test(phoneInput.value)) {
-                phoneError.textContent = "Phone number should be exactly 10 digits.";
-                event.preventDefault();
-            } else {
-                phoneError.textContent = "";
-            }
-        });
+    if (!phoneRegex.test(phoneValue)) {
+        phoneError.textContent = "Phone number must start with 6, 7, 8, or 9 and be exactly 10 digits.";
+        event.preventDefault();
+    } else if (/^0+$/.test(phoneValue)) {
+        phoneError.textContent = "Phone number cannot be all zeros.";
+        event.preventDefault();
+    } else if (phoneValue.length === 0 || /^\s+$/.test(phoneValue)) {
+        phoneError.textContent = "Phone number cannot be empty or contain only spaces.";
+        event.preventDefault();
+    } else {
+        phoneError.textContent = "";
+    }
+});
+
 
         document.getElementById('changePasswordForm').addEventListener('submit', function (event) {
             var newPasswordInput = document.getElementById('inputNewPassword');

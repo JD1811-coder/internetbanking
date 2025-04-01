@@ -343,26 +343,25 @@ WHERE b.account_id = ?;
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script>
-    document.addEventListener("DOMContentLoaded", function () {
-    document.querySelector("form").addEventListener("submit", function (event) {
-        var transaction_amt = parseFloat(document.getElementById("transaction_amt").value);
-        var acc_amount = <?php echo json_encode((float)$acc_amount); ?>; 
-        var min_balance = <?php echo json_encode((float)$min_balance); ?>;
-        var remaining_balance = acc_amount - transaction_amt;
+document.addEventListener("DOMContentLoaded", function () {
+    var transactionAmtInput = document.getElementById("transaction_amt");
 
-        if (isNaN(transaction_amt) || transaction_amt <= 0) {
-            Swal.fire("Error", "Please enter a valid positive number greater than zero for withdrawal.", "error");
-            event.preventDefault();
-        } else if (transaction_amt > acc_amount) {
-            Swal.fire("Error", "Insufficient Balance! Your Current Balance is Rs. " + acc_amount, "error");
-            event.preventDefault();
-        } else if (remaining_balance < min_balance) {
-            Swal.fire("Warning", "Minimum balance of Rs. " + min_balance + " is required in your account. Your withdrawal exceeds this limit.", "warning");
+    // Prevent non-numeric input
+    transactionAmtInput.addEventListener("input", function () {
+        this.value = this.value.replace(/[^0-9.]/g, ""); // Allows only numbers and decimals
+    });
+
+    document.querySelector("form").addEventListener("submit", function (event) {
+        var transaction_amt = transactionAmtInput.value.trim();
+
+        if (transaction_amt === "" || isNaN(transaction_amt) || parseFloat(transaction_amt) <= 0) {
+            Swal.fire("Error", "Please enter a valid amount greater than zero.", "error");
             event.preventDefault();
         }
     });
 });
 </script>
+
 </body>
    
 </html>

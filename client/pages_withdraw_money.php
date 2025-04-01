@@ -240,7 +240,19 @@ $mysqli->autocommit(TRUE);
                                                 <div class=" col-md-6 form-group">
                                                     <label for="exampleInputPassword1">Amount Withdraw(Rs.) </label>
                                                     <input type="text" name="transaction_amt" required class="form-control"
-                                                        id="transaction_amt">
+       id="transaction_amt" oninput="validateAmount(this)">
+<script>
+function validateAmount(input) {
+    // Remove non-numeric characters except dot (.)
+    input.value = input.value.replace(/[^0-9.]/g, '');
+
+    // Ensure only one dot (.) for decimals
+    if ((input.value.match(/\./g) || []).length > 1) {
+        input.value = input.value.slice(0, -1);
+    }
+}
+</script>
+
                                                 </div>
                                                 <div class=" col-md-4 form-group" style="display:none">
                                                     <label for="exampleInputPassword1">Transaction Type</label>
