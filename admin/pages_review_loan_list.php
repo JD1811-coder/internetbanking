@@ -4,13 +4,12 @@ include('conf/config.php');
 include('conf/checklogin.php');
 check_login();
 $admin_id = $_SESSION['admin_id'];
-
 if (isset($_POST['approve_loan'])) {
     $loan_id = intval($_POST['loan_id']);
     $staff_id = $_SESSION['admin_id']; // Logged-in staff approving the loan
 
     // Fetch loan details
-    $query = "SELECT la.loan_amount, la.client_id, ib.acc_amount
+    $query = "SELECT la.loan_amount, la.client_id, ib.acc_amount, ib.account_id
               FROM loan_applications la
               JOIN ib_bankaccounts ib ON la.client_id = ib.client_id
               WHERE la.id = ?";
@@ -18,32 +17,83 @@ if (isset($_POST['approve_loan'])) {
     $stmt = $mysqli->prepare($query);
     $stmt->bind_param('i', $loan_id);
     $stmt->execute();
-    $stmt->bind_result($loan_amount, $client_id, $account_id);
+    $stmt->bind_result($loan_amount, $client_id, $client_balance, $client_account_id);
     $stmt->fetch();
     $stmt->close();
 
-    if ($loan_amount && $client_id && $account_id) {
-        // Update loan status to 'approved'
-        $updateLoan = "UPDATE loan_applications SET status='approved', reviewed_by=? WHERE id=?";
-        $stmt = $mysqli->prepare($updateLoan);
-        $stmt->bind_param('ii', $staff_id, $loan_id);
-        $stmt->execute();
-        $stmt->close();
+    if ($loan_amount && $client_id && $client_account_id) {
+        $mysqli->begin_transaction(); // Start Transaction
 
-        // Insert a transaction for loan disbursement
-        $tr_code = strtoupper(uniqid('LN')); // Unique transaction code
-        $tr_type = 'Deposit';
-        $tr_desc = 'Loan Disbursement';
-        $stmt = $mysqli->prepare("INSERT INTO iB_Transactions (tr_code, account_id, client_id, tr_type, transaction_amt, description) 
-                                  VALUES (?, ?, ?, ?, ?, ?)");
-        $stmt->bind_param('siisds', $tr_code, $account_id, $client_id, $tr_type, $loan_amount, $tr_desc);
-        $stmt->execute();
-        $stmt->close();
+        try {
+            // ✅ Update Loan Status to Approved
+            $updateLoan = "UPDATE loan_applications SET status='approved', reviewed_by=? WHERE id=?";
+            $stmt = $mysqli->prepare($updateLoan);
+            $stmt->bind_param('ii', $staff_id, $loan_id);
+            $stmt->execute();
+            $stmt->close();
 
-        $info = "Loan Approved and Credited to Client's Account";
+            // ✅ Credit Loan Amount to Client’s Account
+            $new_client_balance = $client_balance + $loan_amount;
+            $updateClientAccount = "UPDATE ib_bankaccounts SET acc_amount = ? WHERE client_id = ?";
+            $stmt = $mysqli->prepare($updateClientAccount);
+            $stmt->bind_param('di', $new_client_balance, $client_id);
+            $stmt->execute();
+            $stmt->close();
+
+            // ✅ Debit Loan Amount from Bank’s Main Account
+            $bank_account_id = 1; // Assuming Bank’s Main Account ID is 1
+            $query = "SELECT acc_amount FROM ib_bankaccounts WHERE account_id = ?";
+            $stmt = $mysqli->prepare($query);
+            $stmt->bind_param('i', $bank_account_id);
+            $stmt->execute();
+            $stmt->bind_result($bank_balance);
+            $stmt->fetch();
+            $stmt->close();
+
+            if ($bank_balance >= $loan_amount) {
+                $new_bank_balance = $bank_balance - $loan_amount;
+                $updateBankAccount = "UPDATE ib_bankaccounts SET acc_amount = ? WHERE account_id = ?";
+                $stmt = $mysqli->prepare($updateBankAccount);
+                $stmt->bind_param('di', $new_bank_balance, $bank_account_id);
+                $stmt->execute();
+                $stmt->close();
+            } else {
+                throw new Exception("Bank does not have enough balance to disburse loan.");
+            }
+
+            // ✅ Insert Loan Disbursement Transaction for Client
+            $tr_code = strtoupper(uniqid('LN'));
+            $tr_type = 'Deposit';
+            $tr_desc = 'Loan Disbursement';
+            $stmt = $mysqli->prepare("INSERT INTO iB_Transactions (tr_code, account_id, client_id, tr_type, transaction_amt, description) 
+                                      VALUES (?, ?, ?, ?, ?, ?)");
+            $stmt->bind_param('siisds', $tr_code, $client_account_id, $client_id, $tr_type, $loan_amount, $tr_desc);
+            $stmt->execute();
+            $stmt->close();
+
+            // ✅ Insert Loan Deduction Transaction for Bank
+            $tr_code_bank = strtoupper(uniqid('BNK'));
+            $tr_type_bank = 'Withdraw';
+            $tr_desc_bank = 'Loan Disbursement Deduction';
+            $stmt = $mysqli->prepare("INSERT INTO iB_Transactions (tr_code, account_id, client_id, tr_type, transaction_amt, description) 
+                                      VALUES (?, ?, ?, ?, ?, ?)");
+            $stmt->bind_param('siisds', $tr_code_bank, $bank_account_id, $client_id, $tr_type_bank, $loan_amount, $tr_desc_bank);
+            $stmt->execute();
+            $stmt->close();
+
+            $mysqli->commit(); // Commit Transaction
+
+            $_SESSION['loan_approved'] = "Loan of Rs. " . number_format($loan_amount, 2) . " has been disbursed.";
+        } catch (Exception $e) {
+            $mysqli->rollback(); // Rollback on failure
+            $_SESSION['loan_error'] = "Error: " . $e->getMessage();
+        }
     } else {
-        $err = "Error processing loan approval.";
+        $_SESSION['loan_error'] = "Error processing loan approval.";
     }
+
+    header("Location: pages_loans.php");
+    exit();
 }
 
 // Fetch all loan applications
@@ -62,8 +112,10 @@ $loanQuery = "SELECT
 FROM loan_applications la
 JOIN ib_clients c ON la.client_id = c.client_id
 JOIN loan_types lt ON la.loan_type_id = lt.id
-LEFT JOIN ib_staff s ON la.reviewed_by = s.id
+LEFT JOIN ib_staff s ON la.reviewed_by = s.staff_id
+WHERE la.status != 'pending'
 ORDER BY la.application_date DESC";
+
 
 $loanResult = $mysqli->query($loanQuery);
 ?>
@@ -77,6 +129,10 @@ $loanResult = $mysqli->query($loanQuery);
 </head>
 
 <body class="hold-transition sidebar-mini layout-fixed layout-navbar-fixed">
+    <!-- Include SweetAlert -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+
     <div class="wrapper">
         <!-- Navigation & Sidebar -->
         <?php include("dist/_partials/nav.php"); ?>

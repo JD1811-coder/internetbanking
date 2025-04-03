@@ -24,16 +24,25 @@ if ($count > 0) {
     exit();
 }
 
+// Fetch main bank account balance
+$mainBankQuery = "SELECT total_balance FROM ib_bank_main_account WHERE id = 1";
+$mainBankResult = $mysqli->query($mainBankQuery);
+$mainBankRow = $mainBankResult->fetch_assoc();
+$mainBankBalance = $mainBankRow['total_balance'];
+
 // Fetch all active bank accounts
-$accountsQuery = "SELECT ib_bankaccounts.account_id, ib_bankaccounts.acc_amount, ib_bankaccounts.acc_type_id
+$accountsQuery = "SELECT ib_bankaccounts.account_id, ib_bankaccounts.acc_amount, ib_bankaccounts.acc_type_id, ib_bankaccounts.client_id
                    FROM ib_bankaccounts WHERE ib_bankaccounts.is_active = '1'";
 $result = $mysqli->query($accountsQuery);
+
+$totalInterestPaid = 0;
 
 if ($result->num_rows > 0) {
     while ($row = $result->fetch_assoc()) {
         $account_id = $row['account_id'];
         $balance = $row['acc_amount'];
         $acc_type_id = $row['acc_type_id'];
+        $client_id = $row['client_id'];
 
         // Fetch interest rate for the account type
         $rateQuery = "SELECT rate FROM ib_acc_types WHERE acctype_id = ?";
@@ -46,18 +55,42 @@ if ($result->num_rows > 0) {
 
         if ($rate > 0) {
             // Calculate interest
-            $interest = ($balance * $rate) / 100 / 12;
-            $newBalance = $balance + $interest;
+            $interest = number_format(($balance * $rate) / 100 / 12, 2, '.', '');
+            $totalInterestPaid += $interest; // Track total interest paid
 
-            // Update account balance
+            // Update user's account balance
+            $newBalance = $balance + $interest;
             $updateQuery = "UPDATE ib_bankaccounts SET acc_amount = ? WHERE account_id = ?";
             $updateStmt = $mysqli->prepare($updateQuery);
             $updateStmt->bind_param('di', $newBalance, $account_id);
             $updateStmt->execute();
             $updateStmt->close();
+
+            // Insert transaction entry for the client
+            $tr_code = bin2hex(random_bytes(10));
+            $tr_type = "Deposit";
+            $tr_status = "Success";
+            $is_active = 1;
+            $created_at = date('Y-m-d H:i:s');
+
+            $transactionQuery = "INSERT INTO ib_transactions (tr_code, account_id, tr_type, tr_status, client_id, transaction_amt, created_at, is_active) 
+                                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+            $trStmt = $mysqli->prepare($transactionQuery);
+            $trStmt->bind_param('sissddsi', $tr_code, $account_id, $tr_type, $tr_status, $client_id, $interest, $created_at, $is_active);
+            $trStmt->execute();
+            $trStmt->close();
         }
     }
-    
+
+    // Deduct 2× total interest paid from the main bank account balance
+    $deductionAmount = $totalInterestPaid * 2;
+    $newMainBankBalance = $mainBankBalance - $deductionAmount;
+    $updateMainBankQuery = "UPDATE ib_bank_main_account SET total_balance = ? WHERE id = 1";
+    $updateMainBankStmt = $mysqli->prepare($updateMainBankQuery);
+    $updateMainBankStmt->bind_param('d', $newMainBankBalance);
+    $updateMainBankStmt->execute();
+    $updateMainBankStmt->close();
+
     // Log the transaction to prevent duplicate deposits
     $logQuery = "INSERT INTO interest_log (month_year, deposited_by) VALUES (?, ?)";
     $logStmt = $mysqli->prepare($logQuery);
@@ -65,7 +98,7 @@ if ($result->num_rows > 0) {
     $logStmt->execute();
     $logStmt->close();
 
-    $_SESSION['success'] = "Monthly interest deposited successfully!";
+    $_SESSION['success'] = "Monthly interest deposited successfully";
 } else {
     $_SESSION['error'] = "No active accounts found.";
 }
