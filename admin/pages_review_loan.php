@@ -92,7 +92,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         
         $stmt_txn->bind_param("sissssi", $tr_code, $client_account_id, $tr_type, $tr_status, $client_id, $loan_amount, $is_active);
         $stmt_txn->execute();
-        
+     // ========== EMI Schedule Generation (Updated for ENUM and structure) ==========
+$principal = $loan->loan_amount;
+$rate = $loan->interest_rate;
+$years = intval($loan->loan_duration_years);
+$months = intval($loan->loan_duration_months);
+$total_months = ($years * 12) + $months;
+
+if ($total_months > 0) {
+    $time_in_years = $total_months / 12;
+    $total_interest = ($principal * $rate * $time_in_years) / 100;
+    $total_payable = $principal + $total_interest;
+    $monthly_emi = round($total_payable / $total_months, 2);
+
+    $due_date = new DateTime('first day of next month'); // First EMI next month
+
+    $stmt_emi = $mysqli->prepare("INSERT INTO loan_emi_schedule 
+        (loan_id, emi_number, due_date, amount, status) 
+        VALUES (?, ?, ?, ?, 'pending')");
+
+    for ($i = 1; $i <= $total_months; $i++) {
+        $due_date_str = $due_date->format('Y-m-d');
+        $stmt_emi->bind_param('iisd', $loan->id, $i, $due_date_str, $monthly_emi);
+        $stmt_emi->execute();
+        $due_date->modify('+1 month');
+    }
+}
+
+
     }
     
     header("Location: pages_review_loan_list.php");

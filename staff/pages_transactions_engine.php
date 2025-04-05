@@ -118,6 +118,8 @@ if (isset($_GET['RollBack_Transaction'])) {
                                                 <th>Transaction Type</th>
                                                 <th>Amount</th>
                                                 <th>Account Owner</th>
+                                                <th>Receiving Client</th>
+
                                                 <!-- <th>Client Name</th> -->
                                                 <th>Timestamp</th>
                                                 <th>Action</th> 
@@ -126,21 +128,26 @@ if (isset($_GET['RollBack_Transaction'])) {
                                         <tbody>
                                             <?php
                                            $ret = "SELECT 
-                                           t.tr_id, 
-                                           t.tr_code, 
-                                           b.account_number, 
-                                           bt.name AS acc_type,  -- Fetching Account Type Name
-                                           bt.rate AS acc_rates,  -- Fetching Account Interest Rate
-                                           t.tr_type, 
-                                           t.transaction_amt, 
-                                           b.acc_name AS account_owner, 
-                                           c.name AS client_name, 
-                                           t.created_at
-                                       FROM iB_Transactions t
-                                       JOIN ib_bankaccounts b ON t.account_id = b.account_id
-                                       JOIN ib_clients c ON t.client_id = c.client_id
-                                       JOIN ib_acc_types bt ON b.acc_type_id = bt.acctype_id  -- Added Join for Account Type
-                                       ORDER BY t.created_at DESC";
+    t.tr_id, 
+    t.tr_code, 
+    b.account_number, 
+    bt.name AS acc_type,  
+    bt.rate AS acc_rates,  
+    t.tr_type, 
+    t.transaction_amt, 
+    b.acc_name AS account_owner, 
+    c.name AS client_name, 
+    t.receiving_acc_no,
+    rc.name AS receiving_client_name,
+    t.created_at
+FROM iB_Transactions t
+JOIN ib_bankaccounts b ON t.account_id = b.account_id
+JOIN ib_clients c ON t.client_id = c.client_id
+JOIN ib_acc_types bt ON b.acc_type_id = bt.acctype_id
+LEFT JOIN ib_bankaccounts rb ON rb.account_number = t.receiving_acc_no
+LEFT JOIN ib_clients rc ON rc.client_id = rb.client_id
+ORDER BY t.created_at DESC
+";
                                
                                             $stmt = $mysqli->prepare($ret);
                                             $stmt->execute();
@@ -159,6 +166,14 @@ if (isset($_GET['RollBack_Transaction'])) {
                                                     <td><?php echo $alertClass; ?></td>
                                                     <td>Rs. <?php echo $row->transaction_amt; ?></td>
                                                     <td><?php echo $row->account_owner; ?></td>
+                                                    <td>
+    <?php 
+        echo $row->tr_type == 'Transfer' && !empty($row->receiving_client_name) 
+            ? $row->receiving_client_name 
+            : '-'; 
+    ?>
+</td>
+
                                                     <!-- <td><?php echo $row->client_name; ?></td> -->
                                                     <td><?php echo date("d-M-Y h:i:s A", strtotime($row->created_at)); ?>
                                                     </td>

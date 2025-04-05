@@ -74,29 +74,34 @@ if (isset($_GET['RollBack_Transaction'])) {
                       <th>Type</th>
                       <th>Amount</th>
                       <th>Acc. Owner</th>
+                      <th>Receiving Account</th>
                       <th>Timestamp</th>
                     </tr>
                   </thead>
-                  <tbody><!-- Log on to codeastro.com for more projects! -->
+                  <tbody>
                     <?php
                     //Get latest transactions 
                     $client_id = $_SESSION['client_id'];
                     $ret = "SELECT 
     t.*,  
     b.account_number, 
-    at.name AS acc_type,  -- Fetch account type name from ib_acc_types
+    at.name AS acc_type,  
     COALESCE(b.acc_name, 'N/A') AS account_owner, 
-    COALESCE(c.name, 'N/A') AS client_name
+    COALESCE(c.name, 'N/A') AS client_name, -- Sender (client)
+    COALESCE(rc.name, '-') AS receiver_name  -- Receiver name (if transfer)
 FROM iB_Transactions t
 LEFT JOIN ib_bankaccounts b ON t.account_id = b.account_id
-LEFT JOIN ib_acc_types at ON b.acc_type_id = at.acctype_id  -- Join with account types
-LEFT JOIN ib_clients c ON t.client_id = c.client_id
-WHERE t.client_id = ?
-ORDER BY t.created_at DESC;
+LEFT JOIN ib_acc_types at ON b.acc_type_id = at.acctype_id
+LEFT JOIN ib_clients c ON t.client_id = c.client_id -- Sender
+LEFT JOIN ib_bankaccounts rb ON t.receiving_acc_no = rb.account_number
+LEFT JOIN ib_clients rc ON rb.client_id = rc.client_id -- Receiver
+WHERE t.client_id = ? OR rb.client_id = ?  -- Fetch transactions where client is sender or receiver
+ORDER BY t.created_at DESC
+";
+$stmt = $mysqli->prepare($ret);
+$stmt->bind_param('ii', $client_id, $client_id); // for sender or receiver
 
- ";
-                    $stmt = $mysqli->prepare($ret);
-                    $stmt->bind_param('i', $client_id);
+
                     $stmt->execute(); //ok
                     $res = $stmt->get_result();
                     $cnt = 1;
@@ -122,6 +127,22 @@ ORDER BY t.created_at DESC;
                         <td><?php echo $alertClass; ?></td>
                         <td>Rs. <?php echo $row->transaction_amt; ?></td>
                         <td><?php echo $row->client_name; ?></td>
+                        <td>
+  <?php
+    if ($row->tr_type == 'Transfer') {
+      if ($row->client_id == $client_id) {
+        // This user is the sender
+        echo $row->receiver_name ?? '-';
+      } else {
+        // This user is the receiver
+        echo $row->client_name ?? '-';
+      }
+    } else {
+      echo '-';
+    }
+  ?>
+</td>
+
                         <td><?php echo date("d-M-Y h:m:s ", strtotime($transTstamp)); ?></td>
 
                       </tr>

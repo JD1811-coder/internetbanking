@@ -48,21 +48,6 @@ if ($result->num_rows === 0) {
 
 $loan_data = $result->fetch_object();
 
-// EMI schedule generator
-function generate_due_dates($start_date, $months)
-{
-    $due_dates = [];
-    $current_date = new DateTime($start_date);
-    $current_date->modify('+1 month');
-
-    for ($i = 0; $i < $months; $i++) {
-        $random_day = rand(1, 28);
-        $due_date = $current_date->format("Y-m-") . str_pad($random_day, 2, '0', STR_PAD_LEFT);
-        $due_dates[] = $due_date;
-        $current_date->modify('+1 month');
-    }
-    return $due_dates;
-}
 
 // EMI Payment AJAX Handler
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['pay_emi'])) {
@@ -190,11 +175,56 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['pay_emi'])) {
                                             $total_duration_years = $years + ($loan_data->loan_duration_months / 12);
                                             $total_interest = ($principal * $rate * $total_duration_years) / 100;
                                             $emi = round(($principal + $total_interest) / $months);
-                                            $due_dates = generate_due_dates($loan_data->application_date, $months);
                                             $current_date = new DateTime();
-
-                                            for ($i = 0; $i < $months; $i++) {
-                                                $due_date = new DateTime($due_dates[$i]);
+                                            $stmt = $mysqli->prepare("SELECT id, due_date FROM loan_emi_schedule WHERE loan_id = ? ORDER BY due_date ASC");
+                                            $stmt->bind_param('i', $loan_data->id);
+                                            $stmt->execute();
+                                            $emi_schedule_result = $stmt->get_result();
+                                            
+                                            $index = 1;
+                                            while ($row = $emi_schedule_result->fetch_assoc()) {
+                                                $due_date_str = $row['due_date'];
+                                                $due_date = new DateTime($due_date_str);
+                                            
+                                                // Check if EMI is already paid
+                                                $stmt_check = $mysqli->prepare("SELECT status FROM loan_payments 
+                                                    WHERE client_id = ? AND loan_id = ? AND emi_date = ? LIMIT 1");
+                                                $stmt_check->bind_param('iis', $client_id, $loan_data->id, $due_date_str);
+                                                $stmt_check->execute();
+                                                $result_check = $stmt_check->get_result();
+                                                $row_check = $result_check->fetch_assoc();
+                                                $is_paid = $row_check && $row_check['status'] === 'paid';
+                                            
+                                                echo "<tr>";
+                                                echo "<td>" . $index . "</td>";
+                                                echo "<td>Month " . $index . "</td>";
+                                                echo "<td>" . $due_date_str . "</td>";
+                                                echo "<td>" . number_format($emi, 2) . "</td>";
+                                                echo "<td>";
+                                            
+                                                if ($is_paid) {
+                                                    echo "<button class='btn btn-success btn-sm' disabled>Paid</button>";
+                                                } elseif ($due_date->format("Y-m") == $current_date->format("Y-m")) {
+                                                    echo "<form id='paymentForm-" . $index . "' method='POST' action=''>
+                                                        <input type='hidden' name='loan_id' value='" . htmlspecialchars($loan_data->id) . "'>
+                                                        <input type='hidden' name='emi_date' value='" . $due_date_str . "'>
+                                                        <input type='hidden' name='emi_amount' value='" . $emi . "'>
+                                                      </form>
+                                                      <button class='btn btn-primary btn-sm' 
+                                                        data-loan-id='" . $loan_data->id . "' 
+                                                        data-emi-index='" . $index . "' 
+                                                        onclick='confirmPayment(" . $loan_data->id . ", " . $index . ", " . $emi . ", \"" . $due_date_str . "\")'>
+                                                        Pay Now
+                                                      </button>";
+                                                } else {
+                                                    echo "<button class='btn btn-secondary btn-sm' disabled>Upcoming</button>";
+                                                }
+                                            
+                                                echo "</td></tr>";
+                                            
+                                                $index++;
+                                            }
+                                            
                                                 $due_date_str = $due_date->format("Y-m-d");
 
                                                 $stmt = $mysqli->prepare("SELECT status FROM loan_payments 
@@ -205,34 +235,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['pay_emi'])) {
                                                 $row = $result_check->fetch_assoc();
                                                 $is_paid = $row && $row['status'] === 'paid';
 
-
-                                                echo "<tr>";
-                                                echo "<td>" . ($i + 1) . "</td>";
-                                                echo "<td>Month " . ($i + 1) . "</td>";
-                                                echo "<td>" . $due_date_str . "</td>";
-                                                echo "<td>" . number_format($emi, 2) . "</td>";
-                                                echo "<td>";
-
-                                                if ($is_paid) {
-                                                    echo "<button class='btn btn-success btn-sm' disabled>Paid</button>";
-                                                } elseif ($due_date->format("Y-m") == $current_date->format("Y-m")) {
-                                                    echo "<form id='paymentForm-" . $i . "' method='POST' action=''>
-                                                    <input type='hidden' name='loan_id' value='" . htmlspecialchars($loan_data->id) . "'>
-                                                    <input type='hidden' name='emi_date' value='" . $due_date_str . "'>
-                                                    <input type='hidden' name='emi_amount' value='" . $emi . "'>
-                                                  </form>
-                                                  <button class='btn btn-primary btn-sm' 
-                                                    data-loan-id='" . $loan_data->id . "' 
-                                                    data-emi-index='" . $i . "' 
-                                                    onclick='confirmPayment(" . $loan_data->id . ", " . $i . ", " . $emi . ", \"" . $due_date_str . "\")'>
-                                                    Pay Now
-                                                  </button>";
-                                                } else {
-                                                    echo "<button class='btn btn-secondary btn-sm' disabled>Upcoming</button>";
-                                                }
-
-                                                echo "</td></tr>";
-                                            }
+                                            
                                             ?>
                                         </tbody>
                                     </table>

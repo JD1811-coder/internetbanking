@@ -4,27 +4,28 @@ include('conf/config.php');
 include('conf/checklogin.php');
 check_login();
 $admin_id = $_SESSION['admin_id'];
-function generateEmiSchedule($mysqli, $loan_id, $application_date, $loan_amount, $interest_rate, $years, $months) {
+function store_emi_schedule($mysqli, $loan_id, $application_date, $principal, $interest_rate, $years, $months) {
     $total_months = ($years * 12) + $months;
-    $duration_years = $years + ($months / 12);
-    $total_interest = ($loan_amount * $interest_rate * $duration_years) / 100;
-    $emi_amount = round(($loan_amount + $total_interest) / $total_months);
+    $total_duration_years = $years + ($months / 12);
+    $total_interest = ($principal * $interest_rate * $total_duration_years) / 100;
+    $emi_amount = round(($principal + $total_interest) / $total_months);
 
-    $start_date = new DateTime($application_date);
-    $start_date->modify('+1 month');
+    $due_date = new DateTime($application_date);
+    $due_date->modify('+1 month');
 
     for ($i = 1; $i <= $total_months; $i++) {
         $random_day = rand(1, 28);
-        $due_date = $start_date->format("Y-m-") . str_pad($random_day, 2, '0', STR_PAD_LEFT);
+        $due_date->setDate($due_date->format('Y'), $due_date->format('m'), $random_day);
+        $formatted_date = $due_date->format("Y-m-d");
 
-        $stmt = $mysqli->prepare("INSERT INTO loan_emi_schedule (loan_id, emi_number, due_date, amount, status) 
-                                  VALUES (?, ?, ?, ?, 'pending')");
-        $stmt->bind_param('iisd', $loan_id, $i, $due_date, $emi_amount);
+        $stmt = $mysqli->prepare("INSERT INTO loan_emi_schedule (loan_id, emi_number, due_date, amount) VALUES (?, ?, ?, ?)");
+        $stmt->bind_param("iisd", $loan_id, $i, $formatted_date, $emi_amount);
         $stmt->execute();
 
-        $start_date->modify('+1 month');
+        $due_date->modify('+1 month');
     }
 }
+
 
 if (isset($_POST['approve_loan'])) {
     $loan_id = intval($_POST['loan_id']);
@@ -41,8 +42,16 @@ WHERE la.id = ?";
     $stmt = $mysqli->prepare($query);
     $stmt->bind_param('i', $loan_id);
     $stmt->execute();
-    $stmt->bind_result($loan_amount, $client_id, $client_balance, $client_account_id, $application_date,
-    $interest_rate, $loan_duration_years, $loan_duration_months);
+    $stmt->bind_result(
+        $loan_amount,
+        $client_id,
+        $client_balance,
+        $client_account_id,
+        $application_date,
+        $interest_rate,
+        $loan_duration_years,
+        $loan_duration_months
+    );
 
     $stmt->fetch();
     $stmt->close();
@@ -108,7 +117,7 @@ WHERE la.id = ?";
             $stmt->close();
             $mysqli->commit(); // Commit Transaction
 // ✅ Generate and Insert EMI Schedule
-generateEmiSchedule($mysqli, $loan_id, $application_date, $loan_amount, $interest_rate, $loan_duration_years, $loan_duration_months);
+            generateEmiSchedule($mysqli, $loan_id, $application_date, $loan_amount, $interest_rate, $loan_duration_years, $loan_duration_months);
 
 
             $_SESSION['loan_approved'] = "Loan of Rs. " . number_format($loan_amount, 2) . " has been disbursed.";
@@ -120,7 +129,7 @@ generateEmiSchedule($mysqli, $loan_id, $application_date, $loan_amount, $interes
         $_SESSION['loan_error'] = "Error processing loan approval.";
     }
 
-    // header("Location: pages_loans.php");
+    header("Location: pages_loans.php");
     exit();
 }
 
@@ -150,6 +159,7 @@ $loanResult = $mysqli->query($loanQuery);
 
 <!DOCTYPE html>
 <html>
+
 <head>
     <meta charset="UTF-8">
     <title>Loan Applications</title>
@@ -158,7 +168,7 @@ $loanResult = $mysqli->query($loanQuery);
 
 <body class="hold-transition sidebar-mini layout-fixed layout-navbar-fixed">
     <!-- Include SweetAlert -->
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 
     <div class="wrapper">
@@ -246,7 +256,7 @@ $loanResult = $mysqli->query($loanQuery);
                                                               </a>";
                                                     }
                                                     echo "</td>";
-                                                    
+
                                                     echo "</tr>";
                                                     $cnt++;
                                                 }
@@ -289,4 +299,5 @@ $loanResult = $mysqli->query($loanQuery);
         });
     </script>
 </body>
+
 </html>
