@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Mar 26, 2025 at 06:01 AM
+-- Generation Time: Apr 05, 2025 at 10:25 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -42,7 +42,8 @@ CREATE TABLE `client_feedback` (
 
 INSERT INTO `client_feedback` (`id`, `client_id`, `subject`, `feedback_message`, `submission_date`, `reply`) VALUES
 (6, 8, 'Complaint Regarding Debit Card Issue', 'Dear Customer Support Team,\n\nI am facing an issue with my debit card ending in 2895. Recently, I attempted to use it for an online transaction, but it was declined despite having sufficient balance. Additionally, I tried withdrawing cash from an ATM, but the transaction failed, and the amount was deducted from my account.\n\nI kindly request you to investigate this issue and process a refund for the deducted amount. Please let me know if any further details are required. Your prompt assistance in resolving this matter would be greatly appreciated.\n\nLooking forward to your response.', '2025-04-14 09:00:55', 'sorry for inconvinecing'),
-(7, 11, 'Issue with Fund Transfer', 'I tried to transfer funds to another account, but the transaction failed.', '2025-03-24 05:30:38', 'We apologize for the inconvenience. Please check if the recipient details are correct and try again.');
+(7, 11, 'Issue with Fund Transfer', 'I tried to transfer funds to another account, but the transaction failed.', '2025-03-24 05:30:38', 'We apologize for the inconvenience. Please check if the recipient details are correct and try again.'),
+(8, 11, 'ertyu', 'erftgyhuj', '2025-04-01 06:55:28', NULL);
 
 -- --------------------------------------------------------
 
@@ -67,7 +68,7 @@ CREATE TABLE `ib_acc_types` (
 INSERT INTO `ib_acc_types` (`acctype_id`, `name`, `description`, `rate`, `code`, `is_active`, `min_balance`) VALUES
 (1, 'Savings Account', '<p>Savings accounts&nbsp;are typically the first official bank account anybody opens. Children may open an account with a parent to begin a pattern of saving. Teenagers open accounts to stash cash earned&nbsp;from a first job&nbsp;or household chores.</p><p>Savings accounts are an excellent place to park&nbsp;emergency cash. Opening a savings account also marks the beginning of your relationship with a financial institution. For example, when joining a credit union, your &ldquo;share&rdquo; or savings account establishes your membership.</p>', '7', 'ACC-CAT-4EZFO', 1, 1000.00),
 (2, ' Retirement Account', '<p>Retirement accounts&nbsp;offer&nbsp;tax advantages. In very general terms, you get to&nbsp;avoid paying income tax on interest&nbsp;you earn from a savings account or CD each year. But you may have to pay taxes on those earnings at a later date. Still, keeping your money sheltered from taxes may help you over the long term. Most banks offer IRAs (both&nbsp;Traditional IRAs&nbsp;and&nbsp;Roth IRAs), and they may also provide&nbsp;retirement accounts for small businesses</p>', '10', 'ACC-CAT-1QYDV', 1, 0.00),
-(4, 'Recurring deposit Account', '<p><strong>Recurring deposit account or RD account</strong> is opened by those who want to save certain amount of money regularly for a certain period of time and earn a higher interest rate.&nbsp;In RD&nbsp;account a&nbsp;fixed amount is deposited&nbsp;every month for a specified period and the total amount is repaid with interest at the end of the particular fixed period.&nbsp;</p><p>The period of deposit is minimum six months and maximum ten years.&nbsp;The interest rates vary&nbsp;for different plans based on the amount one saves and the period of time and also on banks. No withdrawals are allowed from the RD account. However, the bank may allow to close the account before the maturity period.</p><p>These accounts can be opened in single or joint names. Banks are also providing the Nomination facility to the RD account holders.&nbsp;</p>', '11', 'ACC-CAT-VBQLE', 1, 2000.00),
+(4, 'Recurring deposit Account', '<p><strong>Recurring deposit account or RD account</strong> is opened by those who want to save certain amount of money regularly for a certain period of time and earn a higher interest rate.&nbsp;In RD&nbsp;account a&nbsp;fixed amount is deposited&nbsp;every month for a specified period and the total amount is repaid with interest at the end of the particular fixed period.&nbsp;</p><p>The period of deposit is minimum six months and maximum ten years.&nbsp;The interest rates vary&nbsp;for different plans based on the amount one saves and the period of time and also on banks. No withdrawals are allowed from the RD account. However, the bank may allow to close the account before the maturity period.</p><p>These accounts can be opened in single or joint names. Banks are also providing the Nomination facility to the RD account holders.&nbsp;</p>', '11', 'ACC-CAT-VBQLE', 1, 6000.00),
 (5, 'Fixed Deposit Account', '<p>In <strong>Fixed Deposit Account</strong> (also known as <strong>FD Account</strong>), a particular sum of money is deposited in a bank for specific&nbsp;period of time. It&rsquo;s one time deposit and one time take away (withdraw) account.&nbsp;The money deposited in this account can not be withdrawn before the expiry of period.&nbsp;</p><p>However, in case of need,&nbsp; the depositor can ask for closing the fixed deposit prematurely by paying a penalty. The penalty amount varies with banks.</p><p>A high interest rate is paid on fixed deposits. The rate of interest paid for fixed deposit vary according to amount, period and also from bank to bank.</p>', '22', 'ACC-CAT-A86GO', 1, 10000.00),
 (7, 'Current account', '<p><strong>Current account</strong> is mainly for business per<strong>s</strong>ons, firms, companies, public enterprises etc and are never used for the purpose of investment or savings.These deposits are the most liquid deposits and there are no limits for number of transactions or the amount of transactions in a day. While, there is no interest paid on amount held in the account, banks charges certain &nbsp;service charges, on such accounts. The current accounts do not have any fixed maturity as thegadegagagase are on continuous basis accounts.</p>', '0', 'ACC-CAT-4O8QW', 1, 5000.00),
 (8, 'Salary Account', '<p>A <strong>salary account</strong> is a bank account where an employer directly deposits an employee&rsquo;s salary. It usually has <strong>zero balance requirements</strong>, <strong>free debit card and chequebook</strong>, <strong>higher transaction limits</strong>, <strong>overdraft facility</strong>, and <strong>easy loan approvals</strong>. It also provides <strong>internet and mobile banking</strong> for seamless transactions.</p>', '6.5', 'ACC-CAT-27DQV', 1, 0.00),
@@ -121,11 +122,43 @@ CREATE TABLE `ib_bankaccounts` (
 --
 
 INSERT INTO `ib_bankaccounts` (`account_id`, `acc_name`, `account_number`, `acc_type_id`, `acc_amount`, `client_id`, `created_at`, `is_active`) VALUES
-(14, 'Hari pandya', '357146928', 1, 17741.96, 5, '2025-03-23 16:16:04.415756', 1),
-(15, 'Arin Gabani', '287359614', 4, 205271.93, 8, '2025-03-22 07:31:36.310908', 1),
-(16, 'Harshit Rana', '705239816', 1, 94086.76, 6, '2025-03-22 10:49:45.436526', 1),
-(23, 'Jenil Dhola', '573608192', 11, 464265.33, 11, '2025-03-23 16:29:49.049342', 1),
-(35, 'Sahil Gohil', '964031285', 9, 5132.11, 15, '2025-03-19 15:31:10.766347', 1);
+(15, 'Arin Gabani', '287359614', 7, 1405271.93, 8, '2025-04-05 08:19:24.323363', 1),
+(16, 'Harshit Rana', '705239816', 1, 123057.31, 6, '2025-04-05 08:23:31.924116', 1),
+(23, 'Jenil Dhola', '573608192', 4, 234632.83, 11, '2025-04-05 08:22:51.847589', 1),
+(35, 'Sahil Gohil', '964031285', 9, 175746.39, 15, '2025-04-05 08:23:31.916656', 1);
+
+--
+-- Triggers `ib_bankaccounts`
+--
+DELIMITER $$
+CREATE TRIGGER `update_bank_balance` AFTER UPDATE ON `ib_bankaccounts` FOR EACH ROW BEGIN
+    UPDATE ib_bank_main_account
+    SET total_balance = (200000000 + (SELECT IFNULL(SUM(acc_amount), 0) FROM ib_bankaccounts))
+    WHERE id = 1;
+END
+$$
+DELIMITER ;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `ib_bank_main_account`
+--
+
+CREATE TABLE `ib_bank_main_account` (
+  `id` int(11) NOT NULL,
+  `account_name` varchar(255) NOT NULL DEFAULT 'Bank Main Account',
+  `account_number` varchar(20) NOT NULL DEFAULT '999999999',
+  `total_balance` decimal(15,2) NOT NULL DEFAULT 200000000.00,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `ib_bank_main_account`
+--
+
+INSERT INTO `ib_bank_main_account` (`id`, `account_name`, `account_number`, `total_balance`, `created_at`) VALUES
+(1, 'Bank Main Account', '999999999', 201938708.46, '2025-04-03 12:23:57');
 
 -- --------------------------------------------------------
 
@@ -154,10 +187,9 @@ CREATE TABLE `ib_clients` (
 --
 
 INSERT INTO `ib_clients` (`client_id`, `name`, `phone`, `address`, `email`, `aadhar_number`, `pan_number`, `password`, `profile_pic`, `client_number`, `is_active`, `otp`, `otp_expiry`) VALUES
-(5, 'Hari Pandya', '7689564734', '114 Allace Avenue', 'harry@gmail.com', '996544392775', 'FXYYY8710N', '55c3b5386c486feb662a0785f340938f518d547f', 'UCmSSTlG_400x400.jpg', 'iBank-CLIENT-7014', 1, NULL, NULL),
 (6, 'Harshit Rana', '7412545454', '23 Hinkle Deegan Lake Road', 'HarshitR34@gmail.com', '489954692767', 'YFGOZ3386S', '55c3b5386c486feb662a0785f340938f518d547f', 'download.jpg', 'iBank-CLIENT-1698', 1, NULL, NULL),
 (8, 'arin gabani', '8799050118', 'apple complex, jahangirura,surat', 'jenildhola1811@gmail.com', '234567890355', 'IHXPD1193P', '$2y$10$UAVdv8DrRbL4LrXWZ4nlK.wzJmOEb/WSLl6tnrBEW6NU7KqA2PhGO', '1744621056_arin.jpg', 'iBank-CLIENT-0423', 1, '552614', '2025-04-14 14:35:30'),
-(11, 'Jenil Dhola', '7412545454', 'A-2/203,DEVI COMPLEX,DABHOLI CHAR RASTA', 'shreeji.gamer.bot@gmail.com', '987698769876', 'PAXEQ2346Q', '$2y$10$6yxMhsckua3wiAT2cx3rzuTM6Uhr54Safv0nkS/xDymtFPdFDXMkq', '1744698229_1742010849_1749620958_JD1.jpeg', 'iBank-CLIENT-2438', 1, '333165', '2025-02-28 13:39:16'),
+(11, 'Jenil Dhola', '7412545454', 'A-2/203,DEVI COMPLEX,DABHOLI CHAR RASTA', 'shreeji.gamer.bot@gmail.com', '987698769876', 'PAXEQ2346Q', '$2y$10$6yxMhsckua3wiAT2cx3rzuTM6Uhr54Safv0nkS/xDymtFPdFDXMkq', '1743489329_1744698229_1742010849_1749620958_JD1.jpeg', 'iBank-CLIENT-2438', 1, '333165', '2025-02-28 13:39:16'),
 (15, 'Sahil Gohil', '6352419645', 'A-103, Riivanta Riverview, Variyav, Surat', 'cleintss2023@gmail.com', '876587658765', 'OPKFW7221P', '$2y$10$tnXEHcPfGDA/hDMbeQd/Z.CFd5AlFASauXVLC7BN7ImCIbogDP/BS', '1741630492_sahil.jpg', 'iBank-CLIENT-0458', 1, '625736', '2025-03-02 22:08:23');
 
 -- --------------------------------------------------------
@@ -356,7 +388,16 @@ INSERT INTO `ib_notifications` (`notification_id`, `notification_details`, `crea
 (190, 'Jenil Dhola Has Withdrawn Rs. 100 From Bank Account 573608192', '2025-03-22 10:35:48.882444', 1),
 (191, 'Jenil Dhola Has Withdrawn Rs. 1 From Bank Account 573608192', '2025-03-22 10:35:51.850194', 1),
 (192, 'Harshit Rana Has Withdrawn Rs. 100 From Bank Account 705239816', '2025-03-22 10:43:40.094174', 1),
-(193, 'Harshit Rana Has Withdrawn Rs. 100 From Bank Account 705239816', '2025-03-22 10:43:53.936585', 1);
+(193, 'Harshit Rana Has Withdrawn Rs. 100 From Bank Account 705239816', '2025-03-22 10:43:53.936585', 1),
+(194, 'Jenil Dhola Has Withdrawn Rs. 1000 From Bank Account 573608192', '2025-03-28 07:48:37.446812', 1),
+(195, 'Jenil Dhola Has Withdrawn Rs. 10000 From Bank Account 573608192', '2025-03-28 08:03:26.271727', 1),
+(196, 'A deposit of Rs. 5000 has been made into Bank Account 357146928', '2025-03-28 08:03:37.891967', 1),
+(197, 'Jenil Dhola Has Withdrawn Rs. 100 From Bank Account 573608192', '2025-03-28 08:03:56.307659', 1),
+(198, 'A deposit of Rs. 10000 has been made into Bank Account 705239816', '2025-03-30 04:13:04.949049', 1),
+(199, 'A deposit of Rs. 45 has been made into Bank Account 357146928', '2025-03-30 04:53:54.705261', 1),
+(200, 'A deposit of Rs. 1 has been made into Bank Account 573608192', '2025-04-01 07:03:08.216485', 1),
+(201, 'Jenil Dhola Has Withdrawn Rs. 67000 From Bank Account 573608192', '2025-04-01 15:09:48.782853', 1),
+(202, 'arin gabani Has Withdrawn Rs. 100000 From Bank Account 287359614', '2025-04-05 06:14:29.035075', 1);
 
 -- --------------------------------------------------------
 
@@ -385,7 +426,7 @@ CREATE TABLE `ib_staff` (
 --
 
 INSERT INTO `ib_staff` (`staff_id`, `name`, `staff_number`, `phone`, `email`, `password`, `sex`, `profile_pic`, `is_active`, `otp`, `otp_expiry`, `aadhaar_number`, `pan`) VALUES
-(3, 'Jay Shah', 'iBank-STAFF-6785', '7049757429', 'dharmika192@gmail.com', '$2y$10$QFW4Q/CDJoJSnbTGll..Uu3cRxo6UU58S/hn6U7HNq65LJz1uyuXG', 'Male', 'jay shah.jpg', 1, '993417', '2025-03-11 12:25:21', '987687654567', 'IJHKJ9876L'),
+(3, 'Jay Shah', 'iBank-STAFF-6785', '9945899345', 'dharmika192@gmail.com', '$2y$10$QFW4Q/CDJoJSnbTGll..Uu3cRxo6UU58S/hn6U7HNq65LJz1uyuXG', 'Male', 'jay shah.jpg', 1, '993417', '2025-03-11 12:25:21', '987687654567', 'IJHKJ9876L'),
 (4, 'Rahul Dravid', 'iBank-STAFF-6724', '7656789876', 'wall@gmail.com', 'd95d3bbedb4dcba5a8e891968853002354b028e9', 'Male', 'rahul.jpg', 1, NULL, NULL, '456834567685', 'MNBVC9876R');
 
 -- --------------------------------------------------------
@@ -407,7 +448,7 @@ CREATE TABLE `ib_systemsettings` (
 --
 
 INSERT INTO `ib_systemsettings` (`id`, `sys_name`, `sys_tagline`, `sys_logo`, `is_active`) VALUES
-(1, 'DigitalBankx', 'Digital banking revolution', 'bank.png', 1);
+(1, 'DigitalBankX', 'Digital banking revolution', 'bank.png', 1);
 
 -- --------------------------------------------------------
 
@@ -436,50 +477,22 @@ INSERT INTO `ib_transactions` (`tr_id`, `tr_code`, `account_id`, `tr_type`, `tr_
 (95, 'dU1ykHVsqDFP7g9ShcZR', 23, 'Deposit', 'Success', 11, '10000', '', '2025-02-23 12:09:58.241214', 1),
 (96, 'vgmrt9xW5d1n2aMQkV6j', 23, 'Withdrawal', 'Success ', 11, '1500', '', '2025-02-23 12:10:13.832713', 1),
 (97, 'DJyFP59gKakXtfqrpViW', 23, 'Transfer', 'Success', 11, '10000', '705239816', '2025-02-23 12:27:23.000000', 1),
-(98, 'EybJDPiQRet4VY9WBg0v', 14, 'Deposit', 'Success', 5, '100', '', '2025-02-23 12:29:48.061610', 1),
 (100, '4eE7TRJAi5vklOWbstVQ', 23, 'Transfer', 'Success', 11, '100', '705239816', '2025-02-23 12:36:08.000000', 1),
 (102, 'vZRaVb5SqrjT4wJsQF8A', 15, 'Deposit', 'Success', 8, '1000000', '', '2025-02-23 12:47:10.885519', 1),
-(105, '02Ixq5XiranltFu8gPA9', 14, 'Transfer', 'Success', 5, '59', '573608192', '2025-02-23 13:09:58.000000', 1),
 (106, '4eE7TRJAi5vklOWbstVQ', 23, 'Transfer', 'Success', 11, '100', '705239816', '2025-02-23 13:10:15.000000', 1),
 (107, 'lRWZzpieXyKbJhcuHfw5', 23, 'Transfer', 'Success', 11, '10000', '357146928', '2025-02-23 13:11:41.000000', 1),
-(110, 'adpbo3BrLsPFcu6VgKTh', 14, 'Transfer', 'Success', 5, '100', '705239816', '2025-02-23 13:45:24.000000', 1),
 (111, 'P8lqXfcMVSADgUoreLCb', 15, 'Transfer', 'Success', 8, '100', '529714806', '2025-02-23 14:15:41.000000', 1),
-(115, 'DZiuj4F1pw5OEUSTvoC3', 14, 'Transfer', 'Success', 5, '100', '730459816', '2025-02-23 14:23:39.000000', 1),
 (120, '2yXC9BRlKaMUjquiSGdN', 23, 'Deposit', 'Success', 11, '100000', '', '2025-02-23 17:12:16.964154', 1),
 (121, '9oAhuYv0sZIFJe2EWOkN', 23, 'Transfer', 'Success', 11, '4000', '730459816', '2025-02-23 17:12:36.000000', 1),
 (122, 'wzKmyf1F38cYgPTj7H2R', 23, 'Transfer', 'Success', 11, '78000', '287359614', '2025-02-23 17:12:42.000000', 1),
-(123, 'BqdH0EAstU2F6L1MgZuK', 14, 'Withdrawal', 'Success', 5, '222', NULL, '2025-02-25 06:49:22.744531', 1),
-(124, 'D6Kadpc3qVZTPuX5veyj', 14, 'Withdrawal', 'Success', 5, '100', NULL, '2025-02-25 06:49:26.452823', 1),
-(125, 'fASsyFwtn3Vk2U8zcBrY', 14, 'Withdrawal', 'Success', 5, '100', NULL, '2025-02-25 06:49:30.749126', 1),
-(126, 'NHfBG9jUsmzVohAD2Xg1', 14, 'Withdrawal', 'Success', 5, '5000', NULL, '2025-02-25 06:49:34.124232', 1),
-(127, 'fASsyFwtn3Vk2U8zcBrY', 14, 'Withdrawal', 'Success', 5, '100', NULL, '2025-02-25 06:49:46.155632', 1),
-(128, '7kb6ryQwBIs5Y4hCEOUo', 14, 'Withdrawal', 'Success', 5, '100', NULL, '2025-02-25 06:49:50.266794', 1),
-(129, '376rajymil4kbHQM9VxB', 14, 'Withdrawal', 'Success', 5, '100', NULL, '2025-02-25 06:49:53.829640', 1),
-(130, '376rajymil4kbHQM9VxB', 14, 'Withdrawal', 'Success', 5, '100', NULL, '2025-02-25 06:51:09.057776', 1),
-(131, '376rajymil4kbHQM9VxB', 14, 'Withdrawal', 'Success', 5, '100', NULL, '2025-02-25 06:51:15.886412', 1),
-(132, '376rajymil4kbHQM9VxB', 14, 'Withdrawal', 'Success', 5, '100', NULL, '2025-02-25 06:51:21.204215', 1),
-(133, '376rajymil4kbHQM9VxB', 14, 'Withdrawal', 'Success', 5, '100', NULL, '2025-02-25 06:51:37.326988', 1),
-(134, '376rajymil4kbHQM9VxB', 14, 'Withdrawal', 'Success', 5, '100', NULL, '2025-02-25 06:53:10.348573', 1),
-(135, '376rajymil4kbHQM9VxB', 14, 'Withdrawal', 'Success', 5, '100', NULL, '2025-02-25 06:53:17.203085', 1),
-(136, 'fASsyFwtn3Vk2U8zcBrY', 14, 'Withdrawal', 'Success', 5, '100', NULL, '2025-02-25 06:53:55.687404', 1),
-(137, 'fASsyFwtn3Vk2U8zcBrY', 14, 'Withdrawal', 'Success', 5, '100', NULL, '2025-02-25 06:53:57.534846', 1),
-(138, 'MjYvzOZbg2n93oh5xBJG', 14, 'Withdrawal', 'Success', 5, '100', NULL, '2025-02-25 07:27:00.942325', 1),
-(139, 'X95YxNhuHbSkvDo0pzmq', 14, 'Withdrawal', 'Success', 5, '100', NULL, '2025-02-25 07:29:45.406100', 1),
-(140, 'X95YxNhuHbSkvDo0pzmq', 14, 'Withdrawal', 'Success', 5, '100', NULL, '2025-02-25 07:31:05.869613', 1),
-(141, 'QbI8dyB49G5HXW2ju1Nt', 14, 'Withdrawal', 'Success', 5, '1200', NULL, '2025-02-25 07:33:22.519599', 1),
-(142, 'QbI8dyB49G5HXW2ju1Nt', 14, 'Withdrawal', 'Success', 5, '1200', NULL, '2025-02-25 07:34:30.657476', 1),
 (143, 'OJGSDurUIQlo8F9q42Xp', 15, 'Withdrawal', 'Success', 8, '18000', NULL, '2025-02-25 07:35:25.769176', 1),
 (144, 'OJGSDurUIQlo8F9q42Xp', 15, 'Withdrawal', 'Success', 8, '18000', NULL, '2025-02-25 07:35:56.496047', 1),
 (145, 'OJGSDurUIQlo8F9q42Xp', 15, 'Withdrawal', 'Success', 8, '18000', NULL, '2025-02-25 07:38:06.902375', 1),
 (146, 'eFv5sWty7h2z6HN4VpfI', 15, 'Withdrawal', 'Success', 8, '1200', NULL, '2025-02-25 07:51:10.544527', 1),
-(147, '1mds6QFGXI8CoB2afuTi', 14, 'Withdrawal', 'Success', 5, '100', NULL, '2025-02-25 07:52:08.535054', 1),
 (148, 'w7t3buIPxXLBYz69NWl2', 15, 'Transfer', 'Success', 8, '1200', '864790325', '2025-02-25 07:53:05.000000', 1),
 (152, 'hQR23ziWvyEAeUZmtMrN', 15, 'Transfer', 'Success', 8, '18000', '730459816', '2025-02-25 07:55:18.000000', 1),
-(153, 'jJKdkWTtnmchzbHQXg8Y', 14, 'Deposit', 'Success', 5, '18000', NULL, '2025-02-25 07:56:06.176874', 1),
-(154, 'OtXrJaKoAG6uvDR37BeM', 14, 'Deposit', 'Success', 5, '52000', NULL, '2025-02-25 07:56:15.623547', 1),
 (155, 'rHSMnDi7cXoEZhFIJwut', 16, 'Transfer', 'Success', 6, '100', '287359614', '2025-02-25 08:52:27.000000', 1),
 (156, 'ZSnEfPBAlHI5hLo7vCX4', 23, 'Withdrawal', 'Success ', 11, '25000', NULL, '2025-03-01 11:55:50.293460', 1),
-(157, '8uxO7NrUqoGQYehiZmfK', 14, 'Withdrawal', 'Success ', 5, '100', NULL, '2025-03-01 12:08:44.101392', 1),
 (159, 'gtKpC6rMczAyUaYu5Slj', 15, 'Deposit', 'Success', 8, '1000000', NULL, '2025-03-01 12:09:37.983716', 1),
 (160, 'Xmaz801KbMOI3nu64xVi', 15, 'Withdrawal', 'Success ', 8, '50000', NULL, '2025-03-01 12:09:59.889484', 1),
 (161, 'QTgSnD7s2XZWI4h5Hxbu', 15, 'Withdrawal', 'Success ', 8, '50000', NULL, '2025-03-01 12:10:07.795601', 1),
@@ -488,23 +501,29 @@ INSERT INTO `ib_transactions` (`tr_id`, `tr_code`, `account_id`, `tr_type`, `tr_
 (166, 'FbQurL7NqXKdWEozBCji', 23, 'Transfer', 'Success', 11, '6000', '529714806', '2025-03-01 12:18:48.000000', 1),
 (167, 'mfjgDwEaTxvrCR8cI6uq', 23, 'Deposit', 'Success', 11, '5000', NULL, '2025-03-02 11:36:14.286271', 1),
 (168, '8pWHm4oSnVQx5fzrPh2Z', 15, 'Transfer', 'Success', 8, '10000', '573608192', '2025-03-02 11:40:54.000000', 1),
-(169, 'gN6TabdDErCO2yXKRQhe', 14, 'Withdrawal', 'Success ', 5, '50000', NULL, '2025-03-02 11:41:27.164055', 1),
 (184, 'q3VHEGI1U0NOle47L96D', 23, 'Transfer', 'Success', 11, '487', '705239816', '2025-03-02 13:01:59.000000', 1),
 (204, 'GFcYuTbBtK8xVCjhlDo9', 23, 'Deposit', 'Success', 11, '100000', NULL, '2025-03-07 16:54:24.102416', 1),
 (221, 'odatixyL1lAkwQ5YvJqE', 35, 'Withdrawal', 'Success ', 15, '100', NULL, '2025-03-10 14:57:36.799022', 1),
 (222, 'By1riua2vCHdpOTM4Vwx', 35, 'Withdrawal', 'Success ', 15, '15000', NULL, '2025-03-10 14:57:48.757350', 1),
 (223, 'LY1eniNRZa3jrGJVASMg', 35, 'Transfer', 'Success', 15, '500', '705239816', '2025-03-10 14:58:05.000000', 1),
 (224, 'Du4YrlhWLvKEJ2TjUbiq', 15, 'Transfer', 'Success', 8, '1200', '964031285', '2025-03-10 14:59:08.000000', 1),
-(225, 'qyTUpZM8YRE6kwxCGesL', 14, 'Withdrawal', 'Success ', 5, '100', NULL, '2025-03-10 15:02:27.704852', 1),
 (226, 'YHkWqvzF6CUV0DZoL1hI', 35, 'Deposit', 'Success', 15, '20000', NULL, '2025-03-10 15:16:21.011716', 1),
-(264, 'eswoK2iWZNvMyhuUJxSm', 14, 'Deposit', 'Success', 5, '10000', NULL, '2025-03-11 14:35:16.855353', 1),
-(268, 'RJ2hjZiaf1t7GQIMXYS9', 14, 'Transfer', 'Success', 5, '100', '573608192', '2025-03-12 09:01:26.000000', 1),
-(274, 'esONZ7t84MHIiEB3LkPg', 14, 'Withdrawal', 'Success ', 5, '1000', NULL, '2025-03-15 04:11:37.038792', 1),
 (275, 'dEsxjtyZ64cR8ighSkFJ', 35, 'Withdrawal', 'Success ', 15, '100', NULL, '2025-03-15 04:17:28.304574', 1),
-(295, 'Tj1DEyFwHtgYbumlOSq3', 14, 'Deposit', 'Success', 5, '100', NULL, '2025-03-17 10:14:39.280343', 1),
 (303, 'KwjG3NnTbhSHkEMf18xr', 23, 'Transfer', 'Success', 11, '100', '287359614', '2025-03-22 07:31:36.000000', 1),
 (304, 'CcZHG6IeX4Owas17Pbd0', 23, 'Withdrawal', 'Success ', 11, '100', NULL, '2025-03-22 10:34:33.185925', 1),
-(309, 'sDF6KhTUIye0aLo3cCpw', 16, 'Withdrawal', 'Success ', 6, '100', NULL, '2025-03-22 10:43:40.092910', 1);
+(309, 'sDF6KhTUIye0aLo3cCpw', 16, 'Withdrawal', 'Success ', 6, '100', NULL, '2025-03-22 10:43:40.092910', 1),
+(337, 'AqThYMflPWekF05ym94s', 23, 'Withdrawal', 'Success ', 11, '1000', NULL, '2025-03-28 07:48:37.442022', 1),
+(338, 'fFEOJupB5gclneavU2Cj', 23, 'Withdrawal', 'Success ', 11, '10000', NULL, '2025-03-28 08:03:26.271179', 1),
+(340, 'WYUNFyp6flvozIV0Xerg', 23, 'Withdrawal', 'Success ', 11, '100', NULL, '2025-03-28 08:03:56.301852', 1),
+(341, 'NYfXc45h6qy8urbRzlgQ', 23, 'Transfer', 'Success', 11, '100', '705239816', '2025-03-28 08:07:42.000000', 1),
+(342, 'UwMQ0GBnjAsva3XyqhmP', 23, 'Transfer', 'Success', 11, '100', '357146928', '2025-03-28 08:37:50.000000', 1),
+(345, '403xYEsaLGqZ2nfQNVyt', 16, 'Deposit', 'Success', 6, '10000', NULL, '2025-03-30 04:13:04.944211', 1),
+(349, 'dvKr2ODRHgEUW10XwF4J', 23, 'Transfer', 'Success', 11, '1000', '357146928', '2025-03-30 04:49:13.000000', 1),
+(362, '1c5ca7ae765c51264f39', 16, 'Deposit', 'Success', 6, '713.67', NULL, '2025-04-03 06:55:21.000000', 1),
+(363, 'd63202994bab65285542', 23, 'Deposit', 'Success', 11, '3628.2', NULL, '2025-04-03 06:55:21.000000', 1),
+(364, '231c5a24297c78cb2155', 35, 'Deposit', 'Success', 15, '15.14', NULL, '2025-04-03 06:55:21.000000', 1),
+(365, '1d4a74379903941eb019', 15, 'Deposit', 'Success', 8, '300000.00', NULL, '2025-04-05 06:13:07.434786', 1),
+(384, '5aAtXprB1mWkDezRNjQg', 35, 'Transfer', 'Success', 15, '11111', '573608192', '2025-04-05 08:20:13.000000', 1);
 
 -- --------------------------------------------------------
 
@@ -524,7 +543,8 @@ CREATE TABLE `interest_log` (
 --
 
 INSERT INTO `interest_log` (`id`, `month_year`, `deposited_by`, `created_at`) VALUES
-(8, '2025-03', 2, '2025-03-19 15:31:10');
+(8, '2025-03', 2, '2025-03-19 15:31:10'),
+(13, '2025-04', 2, '2025-04-03 12:25:21');
 
 -- --------------------------------------------------------
 
@@ -556,12 +576,28 @@ CREATE TABLE `loan_applications` (
 --
 
 INSERT INTO `loan_applications` (`id`, `applicant_name`, `loan_amount`, `application_date`, `status`, `reviewed_by`, `admin_review_id`, `review_date`, `staff_remark`, `admin_remark`, `client_id`, `loan_type_id`, `is_approved_by_staff`, `income_salary`, `loan_duration_years`, `loan_duration_months`) VALUES
-(27, 'utsav cheta', 800000.00, '2025-03-05 11:38:24', 'approved', 3, 2, '2025-05-11 10:28:44', 'no', 'ff', 11, 2, 0, 80000.00, 10, 6),
 (28, 'darshan lakhani', 120000.00, '2025-03-05 13:49:35', 'approved', 3, 2, '2025-03-05 13:50:23', 'good', 'ok', 15, 11, 0, 25000.00, 1, 6),
-(29, 'Arin Gabani', 120000.00, '2025-04-14 14:37:02', 'approved', 3, 2, '2025-03-11 10:08:17', 'yooo', 'barobar', 8, 9, 0, 30000.00, 3, 6),
-(31, 'Arin gabani', 300000.00, '2025-04-14 14:47:07', 'rejected', 3, 2, '2025-03-11 09:43:00', 'reject', 'go study', 8, 5, 0, 30000.00, 7, 0),
-(38, 'Jenil Dhola', 100000.00, '2025-03-15 08:58:58', 'recommended', 3, NULL, '2025-03-15 09:01:53', 'good', 'Pending Review', 11, 9, 0, 20000.00, 3, 0),
-(41, 'Jenil Dhola', 100000.00, '2025-04-15 12:46:52', 'approved', 3, 2, '2025-04-15 12:47:34', 'werty', 'erty', 11, 8, 0, 30000.00, 1, 6);
+(31, 'Arin gabani', 300000.00, '2025-04-14 14:47:07', 'approved', 3, 2, '2025-04-05 11:43:07', 'reject', 'approve', 8, 5, 0, 30000.00, 7, 0),
+(38, 'Jenil Dhola', 100000.00, '2025-03-15 08:58:58', 'approved', 3, 2, '2025-04-02 17:40:14', 'good', 'approve', 11, 9, 0, 20000.00, 3, 0),
+(43, 'Jenil Dhola', 100000.00, '2025-04-01 12:24:18', 'approved', 3, 2, '2025-04-02 17:57:03', 'ds', 'yaa', 11, 4, 0, 50000.00, 1, 5),
+(44, 'Sahil Gohil', 100000.00, '2025-04-05 11:46:29', 'approved', 3, 2, '2025-04-05 11:50:34', 'recommned', 'app', 15, 6, 0, 19000.00, 2, 1),
+(45, 'Sahil Gohil', 100000.00, '2025-05-05 13:26:42', 'approved', 3, 2, '2025-05-05 13:32:37', 'ftvgbhjnmk', 'wsedrftyhu', 15, 8, 0, 10000.00, 1, 5);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `loan_emi_schedule`
+--
+
+CREATE TABLE `loan_emi_schedule` (
+  `id` int(11) NOT NULL,
+  `loan_id` int(10) UNSIGNED NOT NULL,
+  `emi_number` int(11) NOT NULL,
+  `due_date` date NOT NULL,
+  `amount` decimal(10,2) NOT NULL,
+  `status` enum('pending','paid') DEFAULT 'pending',
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -584,17 +620,16 @@ CREATE TABLE `loan_payments` (
 --
 
 INSERT INTO `loan_payments` (`id`, `client_id`, `loan_id`, `emi_date`, `amount`, `status`, `created_at`) VALUES
-(1, 11, 27, '2025-04-08', 11587.00, 'paid', '2025-04-13 17:55:10'),
 (11, 8, 31, '2025-05-09', 5009.00, 'paid', '2025-05-14 09:24:16'),
-(12, 8, 29, '2025-05-25', 3243.00, 'paid', '2025-05-10 09:48:21'),
 (13, 8, 31, '2025-05-21', 5009.00, 'paid', '2025-05-10 09:53:30'),
 (14, 8, 31, '2025-05-19', 5009.00, 'paid', '2025-05-10 09:55:30'),
-(15, 8, 29, '2025-05-27', 3243.00, 'paid', '2025-05-10 10:03:13'),
 (17, 15, 28, '2025-05-10', 7200.00, 'paid', '2025-05-10 10:09:17'),
-(21, 11, 27, '2025-04-26', 11587.00, 'paid', '2025-04-12 11:28:18'),
-(22, 11, 27, '2025-04-10', 11587.00, 'paid', '2025-04-12 11:28:52'),
-(23, 11, 27, '2025-04-25', 11587.00, 'paid', '2025-04-12 11:32:41'),
-(26, 11, 41, '2025-05-01', 6250.00, 'paid', '2025-05-15 07:18:07');
+(27, 11, 43, '2025-05-23', 6716.00, 'paid', '2025-05-05 07:21:41'),
+(28, 11, 43, '2025-05-13', 6716.00, 'paid', '2025-05-05 07:22:09'),
+(29, 11, 43, '2025-05-26', 6716.00, 'paid', '2025-05-05 07:25:39'),
+(30, 11, 43, '2025-05-06', 6716.00, 'paid', '2025-05-05 07:30:06'),
+(31, 11, 38, '2025-05-12', 3153.00, 'paid', '2025-05-05 07:30:40'),
+(32, 11, 38, '2025-05-11', 3153.00, 'paid', '2025-05-05 07:42:05');
 
 -- --------------------------------------------------------
 
@@ -683,6 +718,13 @@ ALTER TABLE `ib_bankaccounts`
   ADD KEY `fk_acc_type` (`acc_type_id`);
 
 --
+-- Indexes for table `ib_bank_main_account`
+--
+ALTER TABLE `ib_bank_main_account`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `account_number` (`account_number`);
+
+--
 -- Indexes for table `ib_clients`
 --
 ALTER TABLE `ib_clients`
@@ -738,6 +780,13 @@ ALTER TABLE `loan_applications`
   ADD KEY `fk_admin_review` (`admin_review_id`);
 
 --
+-- Indexes for table `loan_emi_schedule`
+--
+ALTER TABLE `loan_emi_schedule`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `loan_id` (`loan_id`);
+
+--
 -- Indexes for table `loan_payments`
 --
 ALTER TABLE `loan_payments`
@@ -766,7 +815,7 @@ ALTER TABLE `password_resets`
 -- AUTO_INCREMENT for table `client_feedback`
 --
 ALTER TABLE `client_feedback`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT for table `ib_acc_types`
@@ -787,6 +836,12 @@ ALTER TABLE `ib_bankaccounts`
   MODIFY `account_id` int(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=37;
 
 --
+-- AUTO_INCREMENT for table `ib_bank_main_account`
+--
+ALTER TABLE `ib_bank_main_account`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
 -- AUTO_INCREMENT for table `ib_clients`
 --
 ALTER TABLE `ib_clients`
@@ -802,7 +857,7 @@ ALTER TABLE `ib_nominees`
 -- AUTO_INCREMENT for table `ib_notifications`
 --
 ALTER TABLE `ib_notifications`
-  MODIFY `notification_id` int(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=194;
+  MODIFY `notification_id` int(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=203;
 
 --
 -- AUTO_INCREMENT for table `ib_staff`
@@ -820,25 +875,31 @@ ALTER TABLE `ib_systemsettings`
 -- AUTO_INCREMENT for table `ib_transactions`
 --
 ALTER TABLE `ib_transactions`
-  MODIFY `tr_id` int(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=337;
+  MODIFY `tr_id` int(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=386;
 
 --
 -- AUTO_INCREMENT for table `interest_log`
 --
 ALTER TABLE `interest_log`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
 
 --
 -- AUTO_INCREMENT for table `loan_applications`
 --
 ALTER TABLE `loan_applications`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=42;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=46;
+
+--
+-- AUTO_INCREMENT for table `loan_emi_schedule`
+--
+ALTER TABLE `loan_emi_schedule`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `loan_payments`
 --
 ALTER TABLE `loan_payments`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=27;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=33;
 
 --
 -- AUTO_INCREMENT for table `loan_types`
@@ -884,6 +945,12 @@ ALTER TABLE `loan_applications`
   ADD CONSTRAINT `fk_client_id` FOREIGN KEY (`client_id`) REFERENCES `ib_clients` (`client_id`) ON DELETE CASCADE ON UPDATE CASCADE,
   ADD CONSTRAINT `loan_applications_ibfk_1` FOREIGN KEY (`reviewed_by`) REFERENCES `ib_staff` (`staff_id`),
   ADD CONSTRAINT `loan_applications_ibfk_2` FOREIGN KEY (`loan_type_id`) REFERENCES `loan_types` (`id`);
+
+--
+-- Constraints for table `loan_emi_schedule`
+--
+ALTER TABLE `loan_emi_schedule`
+  ADD CONSTRAINT `fk_loan_id` FOREIGN KEY (`loan_id`) REFERENCES `loan_applications` (`id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `loan_payments`
