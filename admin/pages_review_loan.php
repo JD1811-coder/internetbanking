@@ -28,13 +28,10 @@ $stmt->bind_param('i', $id);
 $stmt->execute();
 $result = $stmt->get_result();
 $loan = $result->fetch_object();
-
-// Process review submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $decision = $_POST['decision'];
     $admin_remark = $_POST['admin_remark'];
 
-    // Enforce only 'approved' or 'rejected' decisions
     if ($decision !== 'approved' && $decision !== 'rejected') {
         die("Invalid decision.");
     }
@@ -46,15 +43,62 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                review_date = NOW() 
                WHERE id = ?";
     $stmt = $mysqli->prepare($update);
-    if (!$stmt) {
-        error_log("Update Query Preparation Failed: " . $mysqli->error);
-        die("An error occurred. Please try again later.");
-    }
     $stmt->bind_param('ssii', $decision, $admin_remark, $admin_id, $id);
     $stmt->execute();
+
+    if ($decision === 'approved') {
+        // Fetch loan amount and client_id from loan
+        $loan_amount = $loan->loan_amount;
+        $client_id = $loan->client_id;
+    
+        // 1. Get client's bank account
+        $acc_query = $mysqli->prepare("SELECT * FROM ib_bankaccounts WHERE client_id = ? AND is_active = 1 LIMIT 1");
+        $acc_query->bind_param("i", $client_id);
+        $acc_query->execute();
+        $acc_result = $acc_query->get_result();
+        $client_acc = $acc_result->fetch_object();
+    
+        if (!$client_acc) {
+            die("Client bank account not found.");
+        }
+    
+        $client_account_id = $client_acc->account_id;
+        $client_account_number = $client_acc->account_number;
+    
+        // 2. Debit from bank main account
+        $main_query = $mysqli->query("SELECT * FROM ib_bank_main_account WHERE id = 1");
+        $main_account = $main_query->fetch_object();
+    
+        if ($main_account->total_balance < $loan_amount) {
+            die("Insufficient funds in the bank main account.");
+        }
+    
+        $new_main_balance = $main_account->total_balance - $loan_amount;
+        $mysqli->query("UPDATE ib_bank_main_account SET total_balance = $new_main_balance WHERE id = 1");
+    
+        // 3. Credit to client bank account
+        $new_client_balance = $client_acc->acc_amount + $loan_amount;
+        $mysqli->query("UPDATE ib_bankaccounts SET acc_amount = $new_client_balance WHERE account_id = $client_account_id");
+
+        
+        $tr_code = bin2hex(random_bytes(10)); // 20-char unique code
+        $tr_type = 'Deposit';
+        $tr_status = 'Success';
+        $is_active = 1;
+        
+        $stmt_txn = $mysqli->prepare("INSERT INTO ib_transactions 
+            (tr_code, account_id, tr_type, tr_status, client_id, transaction_amt, receiving_acc_no, is_active) 
+            VALUES (?, ?, ?, ?, ?, ?, NULL, ?)");
+        
+        $stmt_txn->bind_param("sissssi", $tr_code, $client_account_id, $tr_type, $tr_status, $client_id, $loan_amount, $is_active);
+        $stmt_txn->execute();
+        
+    }
+    
     header("Location: pages_review_loan_list.php");
     exit;
 }
+
 ?>
 <!DOCTYPE html>
 <html>

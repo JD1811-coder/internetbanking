@@ -129,11 +129,18 @@ if (!$loanResult) {
                                                     echo "<td>" . date('d/m/Y H:i', strtotime($row->application_date)) . "</td>";
                                                     echo "<td><span class=\"badge badge-{$badgeClass}\">" . ucfirst($row->status) . "</span></td>";
                                                     echo "<td>" . htmlspecialchars($row->reviewer_name ?? '') . "</td>";
-                                                    echo "<td>
-                                    <a href=\"review_loan.php?id={$row->id}\" class=\"btn btn-primary btn-sm\">
-                                        <i class=\"fas fa-search\"></i> Review
-                                    </a>
-                                  </td>";
+                                                    echo "<td>";
+                                                    if ($row->status === 'approved') {
+                                                        echo "<button class=\"btn btn-secondary btn-sm\" disabled>
+                                                                <i class=\"fas fa-check\"></i> Approved
+                                                              </button>";
+                                                    } else {
+                                                        echo "<a href=\"review_loan.php?id={$row->id}\" class=\"btn btn-primary btn-sm\">
+                                                                <i class=\"fas fa-search\"></i> Review
+                                                              </a>";
+                                                    }
+                                                    echo "</td>";
+                                                    
                                                     echo "</tr>";
                                                     $cnt++;
                                                 }

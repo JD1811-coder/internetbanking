@@ -4,20 +4,46 @@ include('conf/config.php');
 include('conf/checklogin.php');
 check_login();
 $admin_id = $_SESSION['admin_id'];
+function generateEmiSchedule($mysqli, $loan_id, $application_date, $loan_amount, $interest_rate, $years, $months) {
+    $total_months = ($years * 12) + $months;
+    $duration_years = $years + ($months / 12);
+    $total_interest = ($loan_amount * $interest_rate * $duration_years) / 100;
+    $emi_amount = round(($loan_amount + $total_interest) / $total_months);
+
+    $start_date = new DateTime($application_date);
+    $start_date->modify('+1 month');
+
+    for ($i = 1; $i <= $total_months; $i++) {
+        $random_day = rand(1, 28);
+        $due_date = $start_date->format("Y-m-") . str_pad($random_day, 2, '0', STR_PAD_LEFT);
+
+        $stmt = $mysqli->prepare("INSERT INTO loan_emi_schedule (loan_id, emi_number, due_date, amount, status) 
+                                  VALUES (?, ?, ?, ?, 'pending')");
+        $stmt->bind_param('iisd', $loan_id, $i, $due_date, $emi_amount);
+        $stmt->execute();
+
+        $start_date->modify('+1 month');
+    }
+}
+
 if (isset($_POST['approve_loan'])) {
     $loan_id = intval($_POST['loan_id']);
     $staff_id = $_SESSION['admin_id']; // Logged-in staff approving the loan
 
     // Fetch loan details
-    $query = "SELECT la.loan_amount, la.client_id, ib.acc_amount, ib.account_id
-              FROM loan_applications la
-              JOIN ib_bankaccounts ib ON la.client_id = ib.client_id
-              WHERE la.id = ?";
+    $query = "SELECT la.loan_amount, la.client_id, ib.acc_amount, ib.account_id, la.application_date,
+    lt.interest_rate, la.loan_duration_years, la.loan_duration_months
+FROM loan_applications la
+JOIN ib_bankaccounts ib ON la.client_id = ib.client_id
+JOIN loan_types lt ON la.loan_type_id = lt.id
+WHERE la.id = ?";
 
     $stmt = $mysqli->prepare($query);
     $stmt->bind_param('i', $loan_id);
     $stmt->execute();
-    $stmt->bind_result($loan_amount, $client_id, $client_balance, $client_account_id);
+    $stmt->bind_result($loan_amount, $client_id, $client_balance, $client_account_id, $application_date,
+    $interest_rate, $loan_duration_years, $loan_duration_months);
+
     $stmt->fetch();
     $stmt->close();
 
@@ -80,8 +106,10 @@ if (isset($_POST['approve_loan'])) {
             $stmt->bind_param('siisds', $tr_code_bank, $bank_account_id, $client_id, $tr_type_bank, $loan_amount, $tr_desc_bank);
             $stmt->execute();
             $stmt->close();
-
             $mysqli->commit(); // Commit Transaction
+// ✅ Generate and Insert EMI Schedule
+generateEmiSchedule($mysqli, $loan_id, $application_date, $loan_amount, $interest_rate, $loan_duration_years, $loan_duration_months);
+
 
             $_SESSION['loan_approved'] = "Loan of Rs. " . number_format($loan_amount, 2) . " has been disbursed.";
         } catch (Exception $e) {
@@ -92,7 +120,7 @@ if (isset($_POST['approve_loan'])) {
         $_SESSION['loan_error'] = "Error processing loan approval.";
     }
 
-    header("Location: pages_loans.php");
+    // header("Location: pages_loans.php");
     exit();
 }
 
@@ -207,11 +235,18 @@ $loanResult = $mysqli->query($loanQuery);
 
                                                     echo "<td>" . htmlspecialchars($row->reviewer_name ?? '') . "</td>";
                                                     echo "<td>" . htmlspecialchars($row->staff_remark ?? '') . "</td>";
-                                                    echo "<td>
-                                    <a href=\"pages_review_loan.php?id={$row->id}\" class=\"btn btn-primary btn-sm\">
-                                        <i class=\"fas fa-search\"></i> Review
-                                    </a>
-                                  </td>";
+                                                    echo "<td>";
+                                                    if ($row->status === 'approved') {
+                                                        echo "<button class=\"btn btn-secondary btn-sm\" disabled>
+                                                                <i class=\"fas fa-check\"></i> Approved
+                                                              </button>";
+                                                    } else {
+                                                        echo "<a href=\"pages_review_loan.php?id={$row->id}\" class=\"btn btn-primary btn-sm\">
+                                                                <i class=\"fas fa-search\"></i> Review
+                                                              </a>";
+                                                    }
+                                                    echo "</td>";
+                                                    
                                                     echo "</tr>";
                                                     $cnt++;
                                                 }

@@ -1,26 +1,77 @@
-    <?php
-    session_start();
-    include('conf/config.php');
-    include('conf/checklogin.php');
-    check_login();
-    $staff_id = $_SESSION['admin_id'];
+<?php 
+session_start();
+include('conf/config.php');
+include('conf/checklogin.php');
+check_login();
+$staff_id = $_SESSION['admin_id'];
 
-    // Rollback transaction
-    if (isset($_GET['RollBack_Transaction'])) {
-        $id = intval($_GET['RollBack_Transaction']);
-        $adn = "DELETE FROM iB_Transactions WHERE tr_id = ?";
-        $stmt = $mysqli->prepare($adn);
+if (isset($_GET['RollBack_Transaction'])) {
+    $id = intval($_GET['RollBack_Transaction']);
+
+    $mysqli->begin_transaction();
+
+    try {
+        // Step 1: Get transaction details
+        $get = "SELECT transaction_amt, tr_type, account_id, receiving_acc_no FROM iB_Transactions WHERE tr_id = ?";
+        $stmt = $mysqli->prepare($get);
+        $stmt->bind_param('i', $id);
+        $stmt->execute();
+        $stmt->bind_result($amount_str, $tr_type, $sender_id, $receiver_acc_no);
+        $stmt->fetch();
+        $stmt->close();
+
+        $amount = floatval($amount_str); // convert string to float
+
+        if (!$amount || !$tr_type || !$sender_id) {
+            throw new Exception("Transaction not found or invalid.");
+        }
+
+        // Step 2: Reverse based on transaction type
+        if ($tr_type == 'Withdrawal') {
+            // Add back to sender's balance
+            $stmt = $mysqli->prepare("UPDATE ib_bankaccounts SET acc_amount = acc_amount + ? WHERE account_id = ?");
+            $stmt->bind_param('di', $amount, $sender_id);
+            $stmt->execute();
+            $stmt->close();
+        } elseif ($tr_type == 'Deposit') {
+            // Remove from sender's balance
+            $stmt = $mysqli->prepare("UPDATE ib_bankaccounts SET acc_amount = acc_amount - ? WHERE account_id = ?");
+            $stmt->bind_param('di', $amount, $sender_id);
+            $stmt->execute();
+            $stmt->close();
+        } elseif ($tr_type == 'Transfer') {
+            // Add back to sender
+            $stmt = $mysqli->prepare("UPDATE ib_bankaccounts SET acc_amount = acc_amount + ? WHERE account_id = ?");
+            $stmt->bind_param('di', $amount, $sender_id);
+            $stmt->execute();
+            $stmt->close();
+
+            // Remove from receiver
+            $stmt = $mysqli->prepare("UPDATE ib_bankaccounts SET acc_amount = acc_amount - ? WHERE account_number = ?");
+            $stmt->bind_param('ds', $amount, $receiver_acc_no);
+            $stmt->execute();
+            $stmt->close();
+        } else {
+            throw new Exception("Unsupported transaction type.");
+        }
+
+        // Step 3: Delete the transaction
+        $del = "DELETE FROM iB_Transactions WHERE tr_id = ?";
+        $stmt = $mysqli->prepare($del);
         $stmt->bind_param('i', $id);
         $stmt->execute();
         $stmt->close();
 
-        if ($stmt) {
-            $info = "Transaction Rolled Back";
-        } else {
-            $err = "Try Again Later";
-        }
+        $mysqli->commit();
+        $info = "Transaction Rolled Back & Account(s) Updated";
+
+    } catch (Exception $e) {
+        $mysqli->rollback();
+        $err = "Rollback failed: " . $e->getMessage();
     }
-    ?>
+}
+
+?>
     <!DOCTYPE html>
     <html>
     <?php include("dist/_partials/head.php"); ?>
@@ -51,6 +102,13 @@
                         <div class="col-12">
                             <div class="card">
                                 <div class="card-header">
+                                <!-- <?php if (isset($info)) { ?>
+    <div class="alert alert-success"><?php echo $info; ?></div>
+<?php } elseif (isset($err)) { ?>
+    <div class="alert alert-danger"><?php echo $err; ?></div>
+<?php } ?> -->
+
+
                                     <h3 class="card-title">Manage Transactions</h3>
                                 </div>
                                 <div class="card-body">
