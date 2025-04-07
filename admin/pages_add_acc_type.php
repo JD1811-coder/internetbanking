@@ -112,43 +112,37 @@ $checkStmt->close();
                                 </div>
 
                                 <form method="post">
-                                    <div class="card-body">
-                                        <div class="row">
-                                            <div class="col-md-3 form-group">
-                                                <label>Account Category Name</label>
-                                                <input type="text" name="name" class="form-control"
-                                                    value="<?php echo htmlspecialchars($name); ?>" required>
-                                                <span class="text-danger"><?php echo $errors['name']; ?></span>
-                                            </div>
-                                            <div class="col-md-3 form-group">
-                                                <label>Account Category Rates % Per Year</label>
-                                                <input type="number" name="rate" class="form-control" step="0.01"
-                                                    min="0.1" max="100" value="<?php echo htmlspecialchars($rate); ?>"
-                                                    required>
-                                                <span class="text-danger"><?php echo $errors['rate']; ?></span>
-                                            </div>
-                                            <div class="col-md-3 form-group">
-                                                <label>Minimum Balance</label>
-                                                <input type="number" name="min_balance" class="form-control" min="1"
-                                                    max="100000"
-                                                    value="<?php echo htmlspecialchars($min_balance); ?>" required>
-                                                <span class="text-danger"><?php echo $errors['min_balance']; ?></span>
-                                            </div>
-                                            <div class="col-md-3 form-group">
-                                                <label>Account Category Code</label>
-                                                <input type="text" readonly name="code" value="<?php echo $code; ?>"
-                                                    class="form-control">
-                                            </div>
-                                        </div>
-                                        <div class="row">
-                                            <div class="col-md-12 form-group">
-                                                <label>Account Category Description</label>
-                                                <textarea name="description" class="form-control"
-                                                    required><?php echo htmlspecialchars($description); ?></textarea>
-                                                <span class="text-danger"><?php echo $errors['description']; ?></span>
-                                            </div>
-                                        </div>
-                                    </div>
+                                <div class="card-body p-3">
+  <div class="row">
+    <div class="col-md-3 mb-3">
+      <label>Account Category Name</label>
+      <input type="text" name="name" class="form-control" value="<?php echo htmlspecialchars($name); ?>" required>
+      <span class="text-danger"><?php echo $errors['name']; ?></span>
+    </div>
+    <div class="col-md-3 mb-3">
+      <label>Account Category Rates </label>
+      <input type="number" name="rate" class="form-control" step="0.01" min="0.1" max="100" value="<?php echo htmlspecialchars($rate); ?>" required>
+      <span class="text-danger"><?php echo $errors['rate']; ?></span>
+    </div>
+    <div class="col-md-3 mb-3">
+      <label>Minimum Balance</label>
+      <input type="number" name="min_balance" class="form-control" min="1" max="100000" value="<?php echo htmlspecialchars($min_balance); ?>" required>
+      <span class="text-danger"><?php echo $errors['min_balance']; ?></span>
+    </div>
+    <div class="col-md-3 mb-3">
+      <label>Account Category Code</label>
+      <input type="text" readonly name="code" value="<?php echo $code; ?>" class="form-control">
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-md-12 mb-3">
+      <label>Account Category Description</label>
+      <textarea name="description" class="form-control" rows="3" required><?php echo htmlspecialchars($description); ?></textarea>
+      <span class="text-danger"><?php echo $errors['description']; ?></span>
+    </div>
+  </div>
+</div>
 
                                     <div class="card-footer">
                                         <button type="submit" name="create_acc_type" class="btn btn-success">

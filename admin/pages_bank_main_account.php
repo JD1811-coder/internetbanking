@@ -3,7 +3,7 @@ session_start();
 include('conf/config.php');
 include('conf/checklogin.php');
 check_login();
-$staff_id = $_SESSION['staff_id'];
+$admin_id = $_SESSION['admin_id'];
 
 // Fetch Bank Main Account Balance
 $bank_account_query = "SELECT total_balance FROM ib_bank_main_account WHERE id = 1";
