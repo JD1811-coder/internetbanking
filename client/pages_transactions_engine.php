@@ -126,15 +126,24 @@ $stmt->bind_param('ii', $client_id, $client_id); // for sender or receiver
                         <td><?php echo $row->account_number; ?></td>
                         <td><?php echo $alertClass; ?></td>
                         <td>Rs. <?php echo $row->transaction_amt; ?></td>
-                        <td><?php echo $row->client_name; ?></td>
                         <td>
+  <?php
+    if ($row->client_id == $client_id) {
+      echo $row->client_name; // logged-in user is sender
+    } else {
+      echo $row->receiver_name; // logged-in user is receiver
+    }
+  ?>
+</td>
+
+<td>
   <?php
     if ($row->tr_type == 'Transfer') {
       if ($row->client_id == $client_id) {
-        // This user is the sender
+        // logged-in user is sender
         echo $row->receiver_name ?? '-';
       } else {
-        // This user is the receiver
+        // logged-in user is receiver
         echo $row->client_name ?? '-';
       }
     } else {
@@ -142,6 +151,7 @@ $stmt->bind_param('ii', $client_id, $client_id); // for sender or receiver
     }
   ?>
 </td>
+
 
                         <td><?php echo date("d-M-Y h:m:s ", strtotime($transTstamp)); ?></td>
 

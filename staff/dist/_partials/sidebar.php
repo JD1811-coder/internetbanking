@@ -142,13 +142,6 @@ function isActive($pages = []) {
     </ul>
 </li>
 
-<!-- Settings -->
-<li class="nav-item">
-    <a href="pages_system_settings.php" class="nav-link <?php echo $currentPage == 'pages_system_settings.php' ? 'active' : ''; ?>">
-        <i class="nav-icon fas fa-cogs"></i>
-        <p>System Settings</p>
-    </a>
-</li>
 
 <!-- Logout -->
 <li class="nav-item">
