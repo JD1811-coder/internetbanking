@@ -26,27 +26,38 @@ if (isset($_GET['RollBack_Transaction'])) {
             throw new Exception("Transaction not found or invalid.");
         }
 
-        // Step 2: Reverse based on transaction type
+        
+        // Step 2: Adjust balances
         if ($tr_type == 'Withdrawal') {
-            // Add back to sender's balance
             $stmt = $mysqli->prepare("UPDATE ib_bankaccounts SET acc_amount = acc_amount + ? WHERE account_id = ?");
             $stmt->bind_param('di', $amount, $sender_id);
             $stmt->execute();
             $stmt->close();
         } elseif ($tr_type == 'Deposit') {
-            // Remove from sender's balance
             $stmt = $mysqli->prepare("UPDATE ib_bankaccounts SET acc_amount = acc_amount - ? WHERE account_id = ?");
             $stmt->bind_param('di', $amount, $sender_id);
             $stmt->execute();
             $stmt->close();
+
+        } elseif ($tr_type == 'Loan EMI') {
+            $stmt = $mysqli->prepare("UPDATE ib_bankaccounts SET acc_amount = acc_amount + ? WHERE account_id = ?");
+            $stmt->bind_param('di', $amount, $sender_id);
+            $stmt->execute();
+            $stmt->close();
+            // Delete the EMI record from loan_payment table
+            $stmt = $mysqli->prepare("DELETE FROM loan_payments WHERE client_id = (SELECT client_id FROM ib_bankaccounts WHERE account_id = ?) AND amount = ? ORDER BY created_at DESC LIMIT 1");
+            $stmt->bind_param('id', $sender_id, $amount);
+            $stmt->execute();
+            $stmt->close();
+
         } elseif ($tr_type == 'Transfer') {
-            // Add back to sender
+            // Return money to sender
             $stmt = $mysqli->prepare("UPDATE ib_bankaccounts SET acc_amount = acc_amount + ? WHERE account_id = ?");
             $stmt->bind_param('di', $amount, $sender_id);
             $stmt->execute();
             $stmt->close();
 
-            // Remove from receiver
+            // Deduct from receiver using account number
             $stmt = $mysqli->prepare("UPDATE ib_bankaccounts SET acc_amount = acc_amount - ? WHERE account_number = ?");
             $stmt->bind_param('ds', $amount, $receiver_acc_no);
             $stmt->execute();
@@ -54,6 +65,7 @@ if (isset($_GET['RollBack_Transaction'])) {
         } else {
             throw new Exception("Unsupported transaction type.");
         }
+
 
         // Step 3: Delete the transaction
         $del = "DELETE FROM iB_Transactions WHERE tr_id = ?";

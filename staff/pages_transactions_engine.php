@@ -36,6 +36,18 @@ if (isset($_GET['RollBack_Transaction'])) {
             $stmt->bind_param('di', $amount, $sender_id);
             $stmt->execute();
             $stmt->close();
+
+        } elseif ($tr_type == 'Loan EMI') {
+            $stmt = $mysqli->prepare("UPDATE ib_bankaccounts SET acc_amount = acc_amount + ? WHERE account_id = ?");
+            $stmt->bind_param('di', $amount, $sender_id);
+            $stmt->execute();
+            $stmt->close();
+            // Delete the EMI record from loan_payment table
+            $stmt = $mysqli->prepare("DELETE FROM loan_payments WHERE client_id = (SELECT client_id FROM ib_bankaccounts WHERE account_id = ?) AND amount = ? ORDER BY created_at DESC LIMIT 1");
+            $stmt->bind_param('id', $sender_id, $amount);
+            $stmt->execute();
+            $stmt->close();
+
         } elseif ($tr_type == 'Transfer') {
             // Return money to sender
             $stmt = $mysqli->prepare("UPDATE ib_bankaccounts SET acc_amount = acc_amount + ? WHERE account_id = ?");
@@ -98,7 +110,7 @@ if (isset($_GET['RollBack_Transaction'])) {
                     <div class="col-12">
                         <div class="card">
                             <div class="card-header">
-                            <!-- <?php if (isset($info)) { ?>
+                                <!-- <?php if (isset($info)) { ?>
     <div class="alert alert-success"><?php echo $info; ?></div>
 <?php } elseif (isset($err)) { ?>
     <div class="alert alert-danger"><?php echo $err; ?></div>
@@ -122,12 +134,12 @@ if (isset($_GET['RollBack_Transaction'])) {
 
                                                 <!-- <th>Client Name</th> -->
                                                 <th>Timestamp</th>
-                                                <th>Action</th> 
+                                                <th>Action</th>
                                             </tr>
                                         </thead>
                                         <tbody>
                                             <?php
-                                           $ret = "SELECT 
+                                            $ret = "SELECT 
     t.tr_id, 
     t.tr_code, 
     b.account_number, 
@@ -148,7 +160,7 @@ LEFT JOIN ib_bankaccounts rb ON rb.account_number = t.receiving_acc_no
 LEFT JOIN ib_clients rc ON rc.client_id = rb.client_id
 ORDER BY t.created_at DESC
 ";
-                               
+
                                             $stmt = $mysqli->prepare($ret);
                                             $stmt->execute();
                                             $res = $stmt->get_result();
@@ -167,12 +179,12 @@ ORDER BY t.created_at DESC
                                                     <td>Rs. <?php echo $row->transaction_amt; ?></td>
                                                     <td><?php echo $row->account_owner; ?></td>
                                                     <td>
-    <?php 
-        echo $row->tr_type == 'Transfer' && !empty($row->receiving_client_name) 
-            ? $row->receiving_client_name 
-            : '-'; 
-    ?>
-</td>
+                                                        <?php
+                                                        echo $row->tr_type == 'Transfer' && !empty($row->receiving_client_name)
+                                                            ? $row->receiving_client_name
+                                                            : '-';
+                                                        ?>
+                                                    </td>
 
                                                     <!-- <td><?php echo $row->client_name; ?></td> -->
                                                     <td><?php echo date("d-M-Y h:i:s A", strtotime($row->created_at)); ?>
@@ -196,7 +208,7 @@ ORDER BY t.created_at DESC
             </section>
         </div>
         <?php include("dist/_partials/footer.php"); ?>
-    </div>  
+    </div>
     <script src="plugins/jquery/jquery.min.js"></script>
     <script src="plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
     <script src="plugins/datatables/jquery.dataTables.js"></script>

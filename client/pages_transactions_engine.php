@@ -73,7 +73,8 @@ if (isset($_GET['RollBack_Transaction'])) {
                       <th>Account No.</th>
                       <th>Type</th>
                       <th>Amount</th>
-                      <th>Acc. Owner</th>
+                      <th>Sender Account</th>
+
                       <th>Receiving Account</th>
                       <th>Timestamp</th>
                     </tr>
@@ -126,15 +127,8 @@ $stmt->bind_param('ii', $client_id, $client_id); // for sender or receiver
                         <td><?php echo $row->account_number; ?></td>
                         <td><?php echo $alertClass; ?></td>
                         <td>Rs. <?php echo $row->transaction_amt; ?></td>
-                        <td>
-  <?php
-    if ($row->client_id == $client_id) {
-      echo $row->client_name; // logged-in user is sender
-    } else {
-      echo $row->receiver_name; // logged-in user is receiver
-    }
-  ?>
-</td>
+                        <td><?php echo $row->client_name ?? '-'; ?></td>
+
 
 <td>
   <?php
