@@ -357,7 +357,7 @@ $stmt->close();
                 <!-- /.card-header -->
                 <div class="card-body p-0">
                   <div class="table-responsive">
-                    <table class="table table-hover table-bordered m-0">
+                    <table class="table table-hover table-bordered table-striped m-0">
                       <thead>
                         <tr>
                           <th>Transaction Code</th>
@@ -365,16 +365,17 @@ $stmt->close();
                           <th>Type</th>
                           <th>Amount</th>
                           <th>Acc. Owner</th>
+                          <th>Receiving account</th>
                           <th>Timestamp</th>
                         </tr>
                       </thead>
                       <tbody>
                         <?php
-                        $limit = 10; // Records per page
+                        $limit = 10; // Number of records per page
                         $page = isset($_GET['page']) ? (int) $_GET['page'] : 1;
                         $offset = ($page - 1) * $limit;
 
-                        // Get total records count
+                        // Get total number of records
                         $countQuery = "SELECT COUNT(*) AS total FROM iB_Transactions";
                         $countStmt = $mysqli->prepare($countQuery);
                         $countStmt->execute();
@@ -382,54 +383,65 @@ $stmt->close();
                         $totalRows = $countResult->fetch_object()->total;
                         $totalPages = ceil($totalRows / $limit);
 
-                        // Fetch paginated records
                         $query = "SELECT 
-    t.*,  
-    b.account_number, 
-    COALESCE(bt.name, 'N/A') AS acc_type,  -- Fetching Account Type Name
-    COALESCE(bt.rate, 0) AS acc_rates,     -- Fetching Account Rate
-    COALESCE(b.acc_name, 'N/A') AS account_owner, 
-    COALESCE(c.name, 'N/A') AS client_name
-FROM iB_Transactions t
-LEFT JOIN ib_bankaccounts b ON t.account_id = b.account_id
-LEFT JOIN ib_clients c ON t.client_id = c.client_id
-LEFT JOIN ib_acc_types bt ON b.acc_type_id = bt.acctype_id  -- Added Join for Account Type
-ORDER BY t.created_at DESC
-LIMIT ? OFFSET ?;
-";
+                        t.tr_id, 
+                        t.tr_code, 
+                        b.account_number, 
+                        bt.name AS acc_type,  
+                        bt.rate AS acc_rates,  
+                        t.tr_type, 
+                        t.transaction_amt, 
+                        b.acc_name AS account_owner, 
+                        c.name AS client_name, 
+                        t.receiving_acc_no,
+                        rc.name AS receiving_client_name,
+                        t.created_at
+                    FROM iB_Transactions t
+                    JOIN ib_bankaccounts b ON t.account_id = b.account_id
+                    JOIN ib_clients c ON t.client_id = c.client_id
+                    JOIN ib_acc_types bt ON b.acc_type_id = bt.acctype_id
+                    LEFT JOIN ib_bankaccounts rb ON rb.account_number = t.receiving_acc_no
+                    LEFT JOIN ib_clients rc ON rc.client_id = rb.client_id
+                    ORDER BY t.created_at DESC
+                    LIMIT ?, ?";
+                    
 
-                        $stmt = $mysqli->prepare($query);
-                        if ($stmt) {
-                          $stmt->bind_param("ii", $limit, $offset);
-                          $stmt->execute();
-                          $res = $stmt->get_result();
+                    $stmt = $mysqli->prepare($query);
+                    $stmt->bind_param("ii", $offset, $limit);
+                    $stmt->execute();
+                    $res = $stmt->get_result();
+                    
+                        while ($row = $res->fetch_object()) {
+                          $transTstamp = $row->created_at ?? 'N/A';
+                          $alertClass = "<span class='badge badge-warning'>Transfer</span>";
 
-                          while ($row = $res->fetch_object()) {
-                            $transTstamp = $row->created_at ?? 'N/A';
-                            $alertClass = "<span class='badge badge-warning'>Transfer</span>";
-
-                            if (isset($row->tr_type)) {
-                              if ($row->tr_type == 'Deposit') {
-                                $alertClass = "<span class='badge badge-success'>$row->tr_type</span>";
-                              } elseif ($row->tr_type == 'Withdrawal') {
-                                $alertClass = "<span class='badge badge-danger'>$row->tr_type</span>";
-                              }
+                          if (isset($row->tr_type)) {
+                            if ($row->tr_type == 'Deposit') {
+                              $alertClass = "<span class='badge badge-success'>$row->tr_type</span>";
+                            } elseif ($row->tr_type == 'Withdrawal') {
+                              $alertClass = "<span class='badge badge-danger'>$row->tr_type</span>";
                             }
-                            ?>
-                            <tr>
-                              <td><?php echo htmlspecialchars($row->tr_code ?? 'N/A'); ?></td>
-                              <td><?php echo htmlspecialchars($row->account_number ?? 'N/A'); ?></td>
-                              <td><?php echo $alertClass; ?></td>
-                              <td>Rs. <?php echo htmlspecialchars($row->transaction_amt ?? '0.00'); ?></td>
-                              <td><?php echo isset($row->client_name) ? htmlspecialchars($row->client_name) : 'N/A'; ?></td>
-                              <td>
-                                <?php echo $transTstamp !== 'N/A' ? date("d-M-Y h:i:s A", strtotime($transTstamp)) : 'N/A'; ?>
-                              </td>
-                            </tr>
-                          <?php }
-                        } else {
-                          echo "<tr><td colspan='6'>Error fetching transactions.</td></tr>";
-                        }
+                          }
+                          ?>
+                          <tr>
+                            <td><?php echo htmlspecialchars($row->tr_code ?? 'N/A'); ?></td>
+                            <td><?php echo htmlspecialchars($row->account_number ?? 'N/A'); ?></td>
+                            <td><?php echo $alertClass; ?></td>
+                            <td>Rs. <?php echo htmlspecialchars($row->transaction_amt ?? '0.00'); ?></td>
+                            <td><?php echo isset($row->client_name) ? htmlspecialchars($row->client_name) : 'N/A'; ?></td>
+                            <td>
+                              <?php
+                              echo $row->tr_type == 'Transfer' && !empty($row->receiving_client_name)
+                                ? $row->receiving_client_name
+                                : '-';
+                              ?>
+                            </td>
+                            <td>
+                              <?php echo $transTstamp !== 'N/A' ? date("d-M-Y h:i:s A", strtotime($transTstamp)) : 'N/A'; ?>
+                            </td>
+                          </tr>
+                        <?php }
+
                         ?>
                       </tbody>
                     </table>
@@ -546,8 +558,8 @@ LIMIT ? OFFSET ?;
         data: [{
           type: "pie",
           showInLegend: true,
-          toolTipContent: "{name}: <strong>{y}%</strong>",
-          indexLabel: "{name} - {y}%",
+          toolTipContent: "{name}: <strong>{y}</strong>",
+          indexLabel: "{name} - {y}",
           dataPoints: [{
             y: <?php
             //return total number of transactions under  Withdrawals

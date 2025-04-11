@@ -33,12 +33,12 @@ $result = $stmt->get_result();
 
 $accountData = [];
 while ($row = $result->fetch_assoc()) {
-    $accountData[] = [
-        "y" => $row['count'],
-        "name" => $row['acc_type'],
-        "exploded" => true
-    ];
-} 
+  $accountData[] = [
+    "y" => $row['count'],
+    "name" => $row['acc_type'],
+    "exploded" => true
+  ];
+}
 
 //return total number of ibank clients
 $result = "SELECT count(*) FROM iB_clients";
@@ -294,14 +294,16 @@ $stmt->close();
                     <div class="col-md-6">
                       <div class="chart">
                         <!-- Transaction Donought chart Canvas -->
-                        <div id="PieChart" class="col-md-6" style="height: 400px; max-width: 500px; margin: 0px auto;"></div>
+                        <div id="PieChart" class="col-md-6" style="height: 400px; max-width: 500px; margin: 0px auto;">
+                        </div>
                       </div>
                       <!-- /.chart-responsive -->
                     </div>
                     <hr>
                     <div class="col-md-6">
                       <div class="chart">
-                        <div id="AccountsPerAccountCategories" class="col-md-6" style="height: 400px; max-width: 500px; margin: 0px auto;"></div>
+                        <div id="AccountsPerAccountCategories" class="col-md-6"
+                          style="height: 400px; max-width: 500px; margin: 0px auto;"></div>
                       </div>
                       <!-- /.chart-responsive -->
                     </div>
@@ -356,145 +358,159 @@ $stmt->close();
           <!-- /.row -->
 
           <!-- Main row -->
-<div class="row">
-  <div class="col-md-12">
-    <div class="card">
-      <div class="card-header border-transparent">
-        <h3 class="card-title">Latest Transactions</h3>
-        <div class="card-tools">
-          <button type="button" class="btn btn-tool" data-card-widget="collapse">
-            <i class="fas fa-minus"></i>
-          </button>
-          <button type="button" class="btn btn-tool" data-card-widget="remove">
-            <i class="fas fa-times"></i>
-          </button>
-        </div>
-      </div>
-      <!-- /.card-header -->
-      <div class="card-body p-0">
-        <div class="table-responsive">
-          <table class="table table-hover table-bordered table-striped m-0">
-            <thead>
-              <tr>
-                <th>Transaction Code</th>
-                <th>Account No.</th>
-                <th>Type</th>
-                <th>Amount</th>
-                <th>Acc. Owner</th>
-                <th>Timestamp</th>
-              </tr>
-            </thead>
-            <tbody>
-              <?php
-              $limit = 10; // Number of records per page
-              $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
-              $offset = ($page - 1) * $limit;
+          <div class="row">
+            <div class="col-md-12">
+              <div class="card">
+                <div class="card-header border-transparent">
+                  <h3 class="card-title">Latest Transactions</h3>
+                  <div class="card-tools">
+                    <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                      <i class="fas fa-minus"></i>
+                    </button>
+                    <button type="button" class="btn btn-tool" data-card-widget="remove">
+                      <i class="fas fa-times"></i>
+                    </button>
+                  </div>
+                </div>
+                <!-- /.card-header -->
+                <div class="card-body p-0">
+                  <div class="table-responsive">
+                    <table class="table table-hover table-bordered table-striped m-0">
+                      <thead>
+                        <tr>
+                          <th>Transaction Code</th>
+                          <th>Account No.</th>
+                          <th>Type</th>
+                          <th>Amount</th>
+                          <th>Acc. Owner</th>
+                          <th>Receiving account</th>
+                          <th>Timestamp</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <?php
+                        $limit = 10; // Number of records per page
+                        $page = isset($_GET['page']) ? (int) $_GET['page'] : 1;
+                        $offset = ($page - 1) * $limit;
 
-              // Get total number of records
-              $countQuery = "SELECT COUNT(*) AS total FROM iB_Transactions";
-              $countStmt = $mysqli->prepare($countQuery);
-              $countStmt->execute();
-              $countResult = $countStmt->get_result();
-              $totalRows = $countResult->fetch_object()->total;
-              $totalPages = ceil($totalRows / $limit);
+                        // Get total number of records
+                        $countQuery = "SELECT COUNT(*) AS total FROM iB_Transactions";
+                        $countStmt = $mysqli->prepare($countQuery);
+                        $countStmt->execute();
+                        $countResult = $countStmt->get_result();
+                        $totalRows = $countResult->fetch_object()->total;
+                        $totalPages = ceil($totalRows / $limit);
 
-              $query = "SELECT 
-    t.*,  
-    b.account_number, 
-    at.name AS acc_type,  -- Get actual account type name
-    COALESCE(b.acc_name, 'N/A') AS account_owner, 
-    COALESCE(c.name, 'N/A') AS client_name
-FROM iB_Transactions t
-LEFT JOIN ib_bankaccounts b ON t.account_id = b.account_id
-LEFT JOIN ib_clients c ON t.client_id = c.client_id
-LEFT JOIN ib_acc_types at ON b.acc_type_id = at.acctype_id  -- Join to get Account Type Name
-ORDER BY t.created_at DESC
-LIMIT ? OFFSET ?;
-";
+                        $query = "SELECT 
+                        t.tr_id, 
+                        t.tr_code, 
+                        b.account_number, 
+                        bt.name AS acc_type,  
+                        bt.rate AS acc_rates,  
+                        t.tr_type, 
+                        t.transaction_amt, 
+                        b.acc_name AS account_owner, 
+                        c.name AS client_name, 
+                        t.receiving_acc_no,
+                        rc.name AS receiving_client_name,
+                        t.created_at
+                    FROM iB_Transactions t
+                    JOIN ib_bankaccounts b ON t.account_id = b.account_id
+                    JOIN ib_clients c ON t.client_id = c.client_id
+                    JOIN ib_acc_types bt ON b.acc_type_id = bt.acctype_id
+                    LEFT JOIN ib_bankaccounts rb ON rb.account_number = t.receiving_acc_no
+                    LEFT JOIN ib_clients rc ON rc.client_id = rb.client_id
+                    ORDER BY t.created_at DESC
+                    LIMIT ?, ?";
+                    
 
-              $stmt = $mysqli->prepare($query);
-              if ($stmt) {
-                $stmt->bind_param("ii", $limit, $offset);
-                $stmt->execute();
-                $res = $stmt->get_result();
-                
-                while ($row = $res->fetch_object()) {
-                  $transTstamp = $row->created_at ?? 'N/A';
-                  $alertClass = "<span class='badge badge-warning'>Transfer</span>";
+                    $stmt = $mysqli->prepare($query);
+                    $stmt->bind_param("ii", $offset, $limit);
+                    $stmt->execute();
+                    $res = $stmt->get_result();
+                    
+                        while ($row = $res->fetch_object()) {
+                          $transTstamp = $row->created_at ?? 'N/A';
+                          $alertClass = "<span class='badge badge-warning'>Transfer</span>";
 
-                  if (isset($row->tr_type)) {
-                    if ($row->tr_type == 'Deposit') {
-                      $alertClass = "<span class='badge badge-success'>$row->tr_type</span>";
-                    } elseif ($row->tr_type == 'Withdrawal') {
-                      $alertClass = "<span class='badge badge-danger'>$row->tr_type</span>";
-                    }
-                  }
-              ?>
-                  <tr>
-                    <td><?php echo htmlspecialchars($row->tr_code ?? 'N/A'); ?></td>
-                    <td><?php echo htmlspecialchars($row->account_number ?? 'N/A'); ?></td>
-                    <td><?php echo $alertClass; ?></td>
-                    <td>Rs. <?php echo htmlspecialchars($row->transaction_amt ?? '0.00'); ?></td>
-                    <td><?php echo isset($row->client_name) ? htmlspecialchars($row->client_name) : 'N/A'; ?></td>
-                    <td>
-                      <?php echo $transTstamp !== 'N/A' ? date("d-M-Y h:i:s A", strtotime($transTstamp)) : 'N/A'; ?>
-                    </td>
-                  </tr>
-              <?php }
-              } else {
-                echo "<tr><td colspan='6'>Error fetching transactions.</td></tr>";
-              }
-              ?>
-            </tbody>
-          </table>
-        </div>
-        <!-- /.table-responsive -->
-      </div>
-      <!-- /.card-body -->
-      <div class="card-footer clearfix">
-        <a href="pages_transactions_engine.php" class="btn btn-sm btn-info float-left">View All</a>
-        
-        <!-- Pagination -->
-        <ul class="pagination pagination-sm float-right">
-          <?php if ($page > 1) : ?>
-            <li class="page-item"><a class="page-link" href="?page=<?php echo ($page - 1); ?>">« Prev</a></li>
-          <?php endif; ?>
+                          if (isset($row->tr_type)) {
+                            if ($row->tr_type == 'Deposit') {
+                              $alertClass = "<span class='badge badge-success'>$row->tr_type</span>";
+                            } elseif ($row->tr_type == 'Withdrawal') {
+                              $alertClass = "<span class='badge badge-danger'>$row->tr_type</span>";
+                            }
+                          }
+                          ?>
+                          <tr>
+                            <td><?php echo htmlspecialchars($row->tr_code ?? 'N/A'); ?></td>
+                            <td><?php echo htmlspecialchars($row->account_number ?? 'N/A'); ?></td>
+                            <td><?php echo $alertClass; ?></td>
+                            <td>Rs. <?php echo htmlspecialchars($row->transaction_amt ?? '0.00'); ?></td>
+                            <td><?php echo isset($row->client_name) ? htmlspecialchars($row->client_name) : 'N/A'; ?></td>
+                            <td>
+                              <?php
+                              echo $row->tr_type == 'Transfer' && !empty($row->receiving_client_name)
+                                ? $row->receiving_client_name
+                                : '-';
+                              ?>
+                            </td>
+                            <td>
+                              <?php echo $transTstamp !== 'N/A' ? date("d-M-Y h:i:s A", strtotime($transTstamp)) : 'N/A'; ?>
+                            </td>
+                          </tr>
+                        <?php }
 
-          <?php for ($i = 1; $i <= $totalPages; $i++) : ?>
-            <li class="page-item <?php echo ($page == $i) ? 'active' : ''; ?>">
-              <a class="page-link" href="?page=<?php echo $i; ?>"><?php echo $i; ?></a>
-            </li>
-          <?php endfor; ?>
+                        ?>
+                      </tbody>
+                    </table>
+                  </div>
+                  <!-- /.table-responsive -->
+                </div>
+                <!-- /.card-body -->
+                <div class="card-footer clearfix">
+                  <a href="pages_transactions_engine.php" class="btn btn-sm btn-info float-left">View All</a>
 
-          <?php if ($page < $totalPages) : ?>
-            <li class="page-item"><a class="page-link" href="?page=<?php echo ($page + 1); ?>">Next »</a></li>
-          <?php endif; ?>
-        </ul>
-      </div>
-      <!-- /.card-footer -->
-    </div>
-    <!-- /.card -->
-  </div>
-</div>
+                  <!-- Pagination -->
+                  <ul class="pagination pagination-sm float-right">
+                    <?php if ($page > 1): ?>
+                      <li class="page-item"><a class="page-link" href="?page=<?php echo ($page - 1); ?>">« Prev</a></li>
+                    <?php endif; ?>
 
-            <!-- /.col -->
+                    <?php for ($i = 1; $i <= $totalPages; $i++): ?>
+                      <li class="page-item <?php echo ($page == $i) ? 'active' : ''; ?>">
+                        <a class="page-link" href="?page=<?php echo $i; ?>"><?php echo $i; ?></a>
+                      </li>
+                    <?php endfor; ?>
+
+                    <?php if ($page < $totalPages): ?>
+                      <li class="page-item"><a class="page-link" href="?page=<?php echo ($page + 1); ?>">Next »</a></li>
+                    <?php endif; ?>
+                  </ul>
+                </div>
+                <!-- /.card-footer -->
+              </div>
+              <!-- /.card -->
+            </div>
           </div>
-          <!-- /.row -->
+
+          <!-- /.col -->
         </div>
-        <!--/. container-fluid -->
-      </section>
-      <!-- /.content -->
+        <!-- /.row -->
     </div>
-    <!-- /.content-wrapper -->
+    <!--/. container-fluid -->
+    </section>
+    <!-- /.content -->
+  </div>
+  <!-- /.content-wrapper -->
 
-    <!-- Control Sidebar -->
-    <aside class="control-sidebar control-sidebar-dark">
-      <!-- Control sidebar content goes here -->
-    </aside>
-    <!-- /.control-sidebar -->
+  <!-- Control Sidebar -->
+  <aside class="control-sidebar control-sidebar-dark">
+    <!-- Control sidebar content goes here -->
+  </aside>
+  <!-- /.control-sidebar -->
 
-    <!-- Main Footer -->
-    <?php include("dist/_partials/footer.php"); ?>
+  <!-- Main Footer -->
+  <?php include("dist/_partials/footer.php"); ?>
 
   </div>
   <!-- ./wrapper -->
@@ -528,7 +544,7 @@ LIMIT ? OFFSET ?;
   <script src="plugins/canvasjs.min.js"></script>
   <!--Load Few Charts-->
   <script>
-    window.onload = function() {
+    window.onload = function () {
 
       var Piechart = new CanvasJS.Chart("PieChart", {
         exportEnabled: false,
@@ -541,13 +557,13 @@ LIMIT ? OFFSET ?;
           itemclick: explodePie
         },
         data: [{
-            type: "pie",
-            showInLegend: true,
-            toolTipContent: "{name}: <strong>{y}</strong>",
-            indexLabel: "{name} - {y}",
-            dataPoints: <?php echo json_encode($accountData, JSON_NUMERIC_CHECK); ?>
+          type: "pie",
+          showInLegend: true,
+          toolTipContent: "{name}: <strong>{y}</strong>",
+          indexLabel: "{name} - {y}",
+          dataPoints: <?php echo json_encode($accountData, JSON_NUMERIC_CHECK); ?>
         }]
-    });
+      });
       var AccChart = new CanvasJS.Chart("AccountsPerAccountCategories", {
         exportEnabled: false,
         animationEnabled: true,
@@ -561,52 +577,52 @@ LIMIT ? OFFSET ?;
         data: [{
           type: "pie",
           showInLegend: true,
-          toolTipContent: "{name}: <strong>{y}%</strong>",
-          indexLabel: "{name} - {y}%",
+          toolTipContent: "{name}: <strong>{y}</strong>",
+          indexLabel: "{name} - {y}",
           dataPoints: [{
-              y: <?php
-                  //return total number of transactions under  Withdrawals
-                  $result = "SELECT count(*) FROM iB_Transactions WHERE  tr_type ='Withdrawal' ";
-                  $stmt = $mysqli->prepare($result);
-                  $stmt->execute();
-                  $stmt->bind_result($Withdrawals);
-                  $stmt->fetch();
-                  $stmt->close();
-                  echo $Withdrawals;
-                  ?>,
-              name: "Withdrawals",
-              exploded: true
-            },
+            y: <?php
+            //return total number of transactions under  Withdrawals
+            $result = "SELECT count(*) FROM iB_Transactions WHERE  tr_type ='Withdrawal' ";
+            $stmt = $mysqli->prepare($result);
+            $stmt->execute();
+            $stmt->bind_result($Withdrawals);
+            $stmt->fetch();
+            $stmt->close();
+            echo $Withdrawals;
+            ?>,
+            name: "Withdrawals",
+            exploded: true
+          },
 
-            {
-              y: <?php
-                  //return total number of transactions under  Deposits
-                  $result = "SELECT count(*) FROM iB_Transactions WHERE  tr_type ='Deposit' ";
-                  $stmt = $mysqli->prepare($result);
-                  $stmt->execute();
-                  $stmt->bind_result($Deposits);
-                  $stmt->fetch();
-                  $stmt->close();
-                  echo $Deposits;
-                  ?>,
-              name: "Deposits",
-              exploded: true
-            },
+          {
+            y: <?php
+            //return total number of transactions under  Deposits
+            $result = "SELECT count(*) FROM iB_Transactions WHERE  tr_type ='Deposit' ";
+            $stmt = $mysqli->prepare($result);
+            $stmt->execute();
+            $stmt->bind_result($Deposits);
+            $stmt->fetch();
+            $stmt->close();
+            echo $Deposits;
+            ?>,
+            name: "Deposits",
+            exploded: true
+          },
 
-            {
-              y: <?php
-                  //return total number of transactions under  Deposits
-                  $result = "SELECT count(*) FROM iB_Transactions WHERE  tr_type ='Transfer' ";
-                  $stmt = $mysqli->prepare($result);
-                  $stmt->execute();
-                  $stmt->bind_result($Transfers);
-                  $stmt->fetch();
-                  $stmt->close();
-                  echo $Transfers;
-                  ?>,
-              name: "Transfers",
-              exploded: true
-            }
+          {
+            y: <?php
+            //return total number of transactions under  Deposits
+            $result = "SELECT count(*) FROM iB_Transactions WHERE  tr_type ='Transfer' ";
+            $stmt = $mysqli->prepare($result);
+            $stmt->execute();
+            $stmt->bind_result($Transfers);
+            $stmt->fetch();
+            $stmt->close();
+            echo $Transfers;
+            ?>,
+            name: "Transfers",
+            exploded: true
+          }
 
           ]
         }]
@@ -616,7 +632,7 @@ LIMIT ? OFFSET ?;
     }
 
     function explodePie(e) {
-      if (typeof(e.dataSeries.dataPoints[e.dataPointIndex].exploded) === "undefined" || !e.dataSeries.dataPoints[e.dataPointIndex].exploded) {
+      if (typeof (e.dataSeries.dataPoints[e.dataPointIndex].exploded) === "undefined" || !e.dataSeries.dataPoints[e.dataPointIndex].exploded) {
         e.dataSeries.dataPoints[e.dataPointIndex].exploded = true;
       } else {
         e.dataSeries.dataPoints[e.dataPointIndex].exploded = false;

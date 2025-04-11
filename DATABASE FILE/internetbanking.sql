@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Apr 05, 2025 at 06:09 PM
+-- Generation Time: Apr 11, 2025 at 11:06 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -122,9 +122,9 @@ CREATE TABLE `ib_bankaccounts` (
 --
 
 INSERT INTO `ib_bankaccounts` (`account_id`, `acc_name`, `account_number`, `acc_type_id`, `acc_amount`, `client_id`, `created_at`, `is_active`) VALUES
-(15, 'Arin Gabani', '287359614', 7, 1415271.93, 8, '2025-04-05 16:08:42.458126', 1),
-(16, 'Harshit Rana', '705239816', 1, 123057.31, 6, '2025-04-05 08:23:31.924116', 1),
-(23, 'Jenil Dhola', '573608192', 4, 306805.83, 11, '2025-04-05 16:07:24.706680', 1),
+(15, 'Arin Gabani', '287359614', 7, 1417600.93, 8, '2025-04-08 07:51:09.032375', 1),
+(16, 'Harshit Rana', '705239816', 1, 124057.31, 6, '2025-04-08 15:11:56.060858', 1),
+(23, 'Jenil Dhola', '573608192', 4, 269896.83, 11, '2025-06-08 15:52:17.242555', 1),
 (35, 'Sahil Gohil', '964031285', 9, 406857.39, 15, '2025-04-05 16:07:08.370035', 1);
 
 --
@@ -158,7 +158,7 @@ CREATE TABLE `ib_bank_main_account` (
 --
 
 INSERT INTO `ib_bank_main_account` (`id`, `account_name`, `account_number`, `total_balance`, `created_at`) VALUES
-(1, 'Bank Main Account', '999999999', 202251992.46, '2025-04-03 12:23:57');
+(1, 'Bank Main Account', '999999999', 202218412.46, '2025-04-03 12:23:57');
 
 -- --------------------------------------------------------
 
@@ -526,8 +526,12 @@ INSERT INTO `ib_transactions` (`tr_id`, `tr_code`, `account_id`, `tr_type`, `tr_
 (387, '03771046fd754e76e807', 35, 'Deposit', 'Success', 15, '100000.00', NULL, '2025-04-05 15:57:26.772864', 1),
 (388, '6c17b880a2fd2fb9181d', 23, 'Deposit', 'Success', 11, '100000.00', NULL, '2025-04-05 15:57:34.900939', 1),
 (389, '0f4d4f3219f9ff8acec6', 35, 'Deposit', 'Success', 15, '120000.00', NULL, '2025-04-05 15:57:41.489113', 1),
-(390, '0662152208f008fcded7', 23, 'Loan EMI', 'Success', 11, '6716.00', NULL, '2025-05-05 15:58:38.553964', 1),
-(391, 'XI3TwhWfOcb8uZrJyQ9A', 23, 'Transfer', 'Success', 11, '10000', '287359614', '2025-04-05 16:07:24.000000', 1);
+(391, 'XI3TwhWfOcb8uZrJyQ9A', 23, 'Transfer', 'Success', 11, '10000', '287359614', '2025-04-05 16:07:24.000000', 1),
+(392, 'B9mfUosY2bcXeQW6hnSE', 15, 'Transfer', 'Success', 8, '122', '573608192', '2025-04-08 07:27:36.000000', 1),
+(394, 'X73yxL4utqGrPlEO5F80', 23, 'Transfer', 'Success', 11, '2928', '287359614', '2025-04-08 07:35:05.000000', 1),
+(395, 'PtaBEoXhI40TSWZe5ysn', 23, 'Transfer', 'Success', 11, '200', '287359614', '2025-04-08 07:50:20.000000', 1),
+(396, 'cVjz8SFYHOqw7sEygTMk', 15, 'Transfer', 'Success', 8, '677', '573608192', '2025-04-08 07:51:09.000000', 1),
+(397, 'juASztFa8b6veXfqOwcx', 23, 'Transfer', 'Success', 11, '1000', '705239816', '2025-04-08 15:07:59.000000', 1);
 
 -- --------------------------------------------------------
 
@@ -775,12 +779,7 @@ INSERT INTO `loan_payments` (`id`, `client_id`, `loan_id`, `emi_date`, `amount`,
 (11, 8, 31, '2025-05-09', 5009.00, 'paid', '2025-05-14 09:24:16'),
 (13, 8, 31, '2025-05-21', 5009.00, 'paid', '2025-05-10 09:53:30'),
 (14, 8, 31, '2025-05-19', 5009.00, 'paid', '2025-05-10 09:55:30'),
-(17, 15, 28, '2025-05-10', 7200.00, 'paid', '2025-05-10 10:09:17'),
-(27, 11, 43, '2025-05-23', 6716.00, 'paid', '2025-05-05 07:21:41'),
-(28, 11, 43, '2025-05-13', 6716.00, 'paid', '2025-05-05 07:22:09'),
-(29, 11, 43, '2025-05-26', 6716.00, 'paid', '2025-05-05 07:25:39'),
-(30, 11, 43, '2025-05-06', 6716.00, 'paid', '2025-05-05 07:30:06'),
-(33, 11, 43, '2025-05-01', 6716.00, 'paid', '2025-05-05 15:58:38');
+(17, 15, 28, '2025-05-10', 7200.00, 'paid', '2025-05-10 10:09:17');
 
 -- --------------------------------------------------------
 
@@ -1026,7 +1025,7 @@ ALTER TABLE `ib_systemsettings`
 -- AUTO_INCREMENT for table `ib_transactions`
 --
 ALTER TABLE `ib_transactions`
-  MODIFY `tr_id` int(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=392;
+  MODIFY `tr_id` int(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=402;
 
 --
 -- AUTO_INCREMENT for table `interest_log`
@@ -1050,7 +1049,7 @@ ALTER TABLE `loan_emi_schedule`
 -- AUTO_INCREMENT for table `loan_payments`
 --
 ALTER TABLE `loan_payments`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=34;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=37;
 
 --
 -- AUTO_INCREMENT for table `loan_types`

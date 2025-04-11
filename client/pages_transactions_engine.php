@@ -73,6 +73,7 @@ if (isset($_GET['RollBack_Transaction'])) {
                       <th>Account No.</th>
                       <th>Type</th>
                       <th>Amount</th>
+                      <th>Acc. Owner</th>
                       <th>Sender Account</th>
 
                       <th>Receiving Account</th>
@@ -84,19 +85,19 @@ if (isset($_GET['RollBack_Transaction'])) {
                     //Get latest transactions 
                     $client_id = $_SESSION['client_id'];
                     $ret = "SELECT 
-    t.*,  
-    b.account_number, 
-    at.name AS acc_type,  
-    COALESCE(b.acc_name, 'N/A') AS account_owner, 
-    COALESCE(c.name, 'N/A') AS client_name, -- Sender (client)
-    COALESCE(rc.name, '-') AS receiver_name  -- Receiver name (if transfer)
+  t.*,  
+  b.account_number, 
+  at.name AS acc_type,  
+  COALESCE(b.acc_name, 'N/A') AS account_owner, 
+  COALESCE(c.name, 'N/A') AS client_name,         -- Sender
+  COALESCE(rc.name, '-') AS receiver_name         -- Receiver
 FROM iB_Transactions t
 LEFT JOIN ib_bankaccounts b ON t.account_id = b.account_id
 LEFT JOIN ib_acc_types at ON b.acc_type_id = at.acctype_id
-LEFT JOIN ib_clients c ON t.client_id = c.client_id -- Sender
+LEFT JOIN ib_clients c ON t.client_id = c.client_id              -- Sender
 LEFT JOIN ib_bankaccounts rb ON t.receiving_acc_no = rb.account_number
-LEFT JOIN ib_clients rc ON rb.client_id = rc.client_id -- Receiver
-WHERE t.client_id = ? OR rb.client_id = ?  -- Fetch transactions where client is sender or receiver
+LEFT JOIN ib_clients rc ON rb.client_id = rc.client_id           -- Receiver
+WHERE t.client_id = ? OR rb.client_id = ? 
 ORDER BY t.created_at DESC
 ";
 $stmt = $mysqli->prepare($ret);
@@ -127,24 +128,34 @@ $stmt->bind_param('ii', $client_id, $client_id); // for sender or receiver
                         <td><?php echo $row->account_number; ?></td>
                         <td><?php echo $alertClass; ?></td>
                         <td>Rs. <?php echo $row->transaction_amt; ?></td>
-                        <td><?php echo $row->client_name ?? '-'; ?></td>
+                        <td>
+  <?php
+    // Show logged-in user name only
+    $loggedInUserName = $_SESSION['name'] ?? 'You';
+    echo $loggedInUserName;
+  ?>
+</td>
 
 
-<td>
+                        <td>
   <?php
     if ($row->tr_type == 'Transfer') {
-      if ($row->client_id == $client_id) {
-        // logged-in user is sender
-        echo $row->receiver_name ?? '-';
-      } else {
-        // logged-in user is receiver
-        echo $row->client_name ?? '-';
-      }
+      echo $row->client_name ?? '-';
     } else {
       echo '-';
     }
   ?>
 </td>
+<td>
+  <?php
+    if ($row->tr_type == 'Transfer') {
+      echo $row->receiver_name ?? '-';
+    } else {
+      echo '-';
+    }
+  ?>
+</td>
+
 
 
                         <td><?php echo date("d-M-Y h:m:s ", strtotime($transTstamp)); ?></td>

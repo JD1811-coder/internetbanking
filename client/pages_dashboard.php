@@ -502,8 +502,8 @@ $TotalBalInAccount = isset($TotalBalInAccount) ? $TotalBalInAccount : 0;
         data: [{
           type: "pie",
           showInLegend: true,
-          toolTipContent: "{name}: <strong>{y}%</strong>",
-          indexLabel: "{name} - {y}%",
+          toolTipContent: "{name}: <strong>{y}</strong>",
+          indexLabel: "{name} - {y}",
           dataPoints: [{
             y: <?php
             //return total number of transactions under  Withdrawals
